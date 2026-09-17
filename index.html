@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Receitaflix_101 — CMCB Turma 101</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        :root { 
+            --vermelho: #D81E05; --vermelho-escuro: #B01804;
+            --azul: #004A99; --azul-escuro: #003366;
+            --dourado: #FFD100; --branco: #FFFFFF;
+            --cinza-claro: #F5F7FA; --cinza: #E4E7EB;
+            --texto: #2D3748;
+        }
+        body { background: var(--cinza-claro); color: var(--texto); min-height: 100vh; }
+
+        /* BOTÃO MENU */
+        .menu-btn {
+            position: fixed; top: 20px; right: 20px; z-index: 1000;
+            width: 55px; height: 55px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--vermelho), var(--azul));
+            border: none; cursor: pointer; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; gap: 5px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: transform 0.2s ease;
+        }
+        .menu-btn:hover { transform: scale(1.1); }
+        .menu-btn span {
+            width: 7px; height: 7px; background: white; border-radius: 50%;
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+        .menu-btn.aberto span:nth-child(1) { transform: rotate(45deg) translate(6px, 6px); }
+        .menu-btn.aberto span:nth-child(2) { opacity: 0; }
+        .menu-btn.aberto span:nth-child(3) { transform: rotate(-45deg) translate(6px, -6px); }
+
+        /* FUNDO ESCURO */
+        .fundo-escuro {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 998; display: none;
+            backdrop-filter: blur(3px);
+        }
+        .fundo-escuro.visivel { display: block; }
+
+        /* PAINEL DO MENU */
+        .menu-painel {
+            position: fixed; top: 0; right: -320px; width: 300px; height: 100vh;
+            background: white; z-index: 999; box-shadow: -5px 0 30px rgba(0,0,0,0.2);
+            transition: right 0.3s ease;
+            padding: 80px 25px 30px;
+        }
+        .menu-painel.aberto { right: 0; }
+
+        .menu-painel h3 {
+            color: var(--azul); font-size: 1.4rem; margin-bottom: 30px;
+            text-align: center; padding-bottom: 15px;
+            border-bottom: 3px solid;
+            border-image: linear-gradient(90deg, var(--vermelho), var(--azul)) 1;
+        }
+        .menu-item {
+            display: flex; align-items: center; gap: 12px; padding: 15px 20px;
+            margin-bottom: 10px; border-radius: 12px; cursor: pointer;
+            font-size: 1.05rem; font-weight: 500; color: var(--texto);
+            transition: all 0.2s ease; border-left: 4px solid transparent;
+        }
+        .menu-item:hover {
+            background: rgba(0,74,153,0.06);
+            border-left-color: var(--vermelho); transform: translateX(-3px);
+        }
+        .menu-item.ativo {
+            background: rgba(0,74,153,0.1);
+            border-left-color: var(--azul); font-weight: 600;
+        }
+        .menu-item span { font-size: 1.3rem; }
+
+        /* CABEÇALHO */
+        header {
+            background: linear-gradient(135deg, var(--azul-escuro), var(--azul), var(--vermelho));
+            color: white; padding: 2.5rem 2rem; text-align: center;
+            box-shadow: 0 6px 25px rgba(0,0,0,0.25); position: relative;
+        }
+        .cabecalho-conteudo {
+            display: flex; align-items: center; justify-content: center; gap: 2rem; flex-wrap: wrap;
+        }
+        .brasao {
+            width: 140px; height: 160px; position: relative; flex-shrink: 0;
+        }
+        .escudo {
+            width: 100%; height: 100%;
+            background: linear-gradient(180deg, var(--azul) 0%, var(--azul-escuro) 100%);
+            clip-path: polygon(0 0, 100% 0, 100% 85%, 50% 100%, 0 85%);
+            border: 4px solid var(--dourado);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .caminhao { font-size: 52px; }
+        .faixa-vermelha {
+            position: absolute; bottom: 28px; left: 0; right: 0; height: 14px;
+            background: var(--vermelho); border-top: 2px solid var(--dourado);
+            border-bottom: 2px solid var(--dourado);
+        }
+        .texto-brasao {
+            font-size: 9px; color: var(--dourado); font-weight: bold; text-align: center;
+            position: absolute; bottom: 8px;
+        }
+        .titulo-cabecalho h1 { font-size: 2.6rem; margin-bottom: 0.5rem; }
+        .titulo-cabecalho h1 span {
+            background: linear-gradient(90deg, var(--dourado), #FFF176);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .turma {
+            display: inline-block; background: var(--dourado); color: var(--azul-escuro);
+            padding: 3px 15px; border-radius: 20px; font-weight: bold;
+            margin-left: 10px;
+        }
+
+        /* SEÇÕES */
+        .sobre-site {
+            background: white; max-width: 900px; margin: 2rem auto; padding: 2.5rem;
+            border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border-top: 5px solid var(--vermelho); text-align: center;
+        }
+        .sobre-site h2 { color: var(--azul); margin-bottom: 1rem; }
+        .barra-pesquisa {
+            max-width: 650px; margin: 2rem auto; padding: 0 1rem;
+        }
+        .barra-pesquisa input {
+            width: 100%; padding: 1.1rem 1.5rem; border: 3px solid var(--cinza);
+            border-radius: 50px; font-size: 1.1rem; outline: none;
+            transition: border-color 0.2s;
+        }
+        .barra-pesquisa input:focus { border-color: var(--azul); }
+        .container { max-width: 1280px; margin: 0 auto; padding: 2rem 1rem; }
+        .secao { display: none; }
+        .secao.ativa { display: block; }
+        .container h2 {
+            text-align: center; font-size: 2rem; margin-bottom: 2rem; color: var(--azul);
+        }
+        .contador {
+            background: linear-gradient(135deg, #E8F0FE, #FEF0F0);
+            padding: 1.5rem; border-radius: 15px; text-align: center;
+            margin-bottom: 2rem; border-left: 5px solid var(--vermelho);
+        }
+        .contador span { font-size: 1.8rem; font-weight: bold; color: var(--vermelho); }
+
+        /* GRADE E CARTÕES — SIMPLES E RÁPIDOS */
+        .grade-receitas {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;
+        }
+        .cartao-receita {
+            background: white; border-radius: 16px; padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08); cursor: pointer;
+            border-left: 5px solid var(--azul);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            opacity: 0; transform: translateY(20px);
+            animation: surgir 0.5s ease forwards;
+        }
+        @keyframes surgir {
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .cartao-receita:nth-child(1) { animation-delay: 0.05s; }
+        .cartao-receita:nth-child(2) { animation-delay: 0.1s; }
+        .cartao-receita:nth-child(3) { animation-delay: 0.15s; }
+        .cartao-receita:nth-child(4) { animation-delay: 0.2s; }
+        .cartao-receita:nth-child(5) { animation-delay: 0.25s; }
+        .cartao-receita:nth-child(6) { animation-delay: 0.3s; }
+        .cartao-receita:nth-child(7) { animation-delay: 0.35s; }
+        .cartao-receita:nth-child(8) { animation-delay: 0.4s; }
+        .cartao-receita:nth-child(9) { animation-delay: 0.45s; }
+        .cartao-receita:nth-child(10) { animation-delay: 0.5s; }
+
+        .cartao-receita:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.12);
+            border-left-color: var(--vermelho);
+        }
+        .cartao-receita h3 { color: var(--azul-escuro); margin-bottom: 0.5rem; }
+        .cartao-receita .categoria {
+            display: inline-block; background: var(--vermelho); color: white;
+            padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.85rem;
+            margin-bottom: 0.8rem;
+        }
+        .sem-resultado { text-align: center; padding: 3rem; color: #888; display: none; }
+
+        /* MODAL */
+        .modal {
+            display: none; position: fixed; z-index: 997; left: 0; top: 0;
+            width: 100%; height: 100%; background: rgba(0,0,0,0.6);
+            overflow-y: auto;
+        }
+        .modal-conteudo {
+            background: white; max-width: 650px; margin: 5% auto; padding: 2.5rem;
+            border-radius: 20px; position: relative;
+            border-top: 5px solid var(--vermelho);
+        }
+        .fechar {
+            position: absolute; right: 1.5rem; top: 1rem; font-size: 2rem;
+            cursor: pointer; color: #888;
+        }
+        .fechar:hover { color: var(--vermelho); }
+        .modal-conteudo h2 { color: var(--azul); border-bottom: 3px solid var(--dourado); padding-bottom: 0.5rem; }
+        .modal-conteudo h3 { color: var(--vermelho); margin: 1.5rem 0 0.5rem; }
+        .modal-conteudo ul, .modal-conteudo ol { padding-left: 1.5rem; }
+
+        /* FORMULÁRIO */
+        .secao-envio {
+            background: white; border-radius: 20px; padding: 2.5rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08); max-width: 650px; margin: 0 auto;
+            border-top: 5px solid var(--azul);
+        }
+        .secao-envio h2 { text-align: center; color: var(--azul); margin-bottom: 1.5rem; }
+        .form-grupo { margin-bottom: 1.2rem; }
+        .form-grupo label { display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--azul-escuro); }
+        .form-grupo input, .form-grupo textarea {
+            width: 100%; padding: 0.9rem; border: 2px solid var(--cinza);
+            border-radius: 8px; font-size: 1rem;
+        }
+        .form-grupo input:focus, .form-grupo textarea:focus { border-color: var(--azul); outline: none; }
+        .btn-enviar {
+            background: linear-gradient(135deg, var(--vermelho), var(--vermelho-escuro));
+            color: white; border: none; padding: 1rem 2rem; border-radius: 10px;
+            font-size: 1.1rem; cursor: pointer; width: 100%; font-weight: bold;
+        }
+        .btn-enviar:hover { opacity: 0.95; }
+        .mensagem-sucesso {
+            display: none; background: #E8FBEE; color: #0F6D38;
+            padding: 1.2rem; border-radius: 10px; margin-top: 1rem;
+            text-align: center; font-weight: 600;
+        }
+
+        /* RODAPÉ */
+        footer {
+            background: linear-gradient(135deg, var(--azul-escuro), var(--azul));
+            color: white; text-align: center; padding: 2.5rem; margin-top: 4rem;
+        }
+        footer .dourado { color: var(--dourado); font-weight: 600; }
+
+        /* RESPONSIVO */
+        @media (max-width: 768px) {
+            .titulo-cabecalho h1 { font-size: 1.8rem; }
+            .grade-receitas { grid-template-columns: 1fr; }
+            .menu-painel { width: 280px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- BOTÃO MENU -->
+<button class="menu-btn" id="menuBtn" type="button">
+    <span></span>
+    <span></span>
+    <span></span>
+</button>
+
+<!-- FUNDO ESCURO -->
+<div class="fundo-escuro" id="fundoEscuro"></div>
+
+<!-- PAINEL DO MENU -->
+<div class="menu-painel" id="menuPainel">
+    <h3>🚒 Navegação</h3>
+    <div class="menu-item ativo" data-secao="receitas">
+        <span>📖</span> Ver Receitas
+    </div>
+    <div class="menu-item" data-secao="enviar">
+        <span>📤</span> Enviar Receita
+    </div>
+    <div class="menu-item" data-secao="comunidade">
+        <span>👥</span> Comunidade
+    </div>
+    <div class="menu-item" data-secao="todas">
+        <span>📂</span> Ver Tudo
+    </div>
+</div>
+
+<header>
+    <div class="cabecalho-conteudo">
+        <div class="brasao">
+            <div class="escudo">
+                <div class="caminhao">🚒</div>
+                <div class="faixa-vermelha"></div>
+                <div class="texto-brasao">COLÉGIO MILITAR<br>DO CORPO DE BOMBEIROS</div>
+            </div>
+        </div>
+        <div class="titulo-cabecalho">
+            <h1>🍽️ Receitaflix_<span>101</span></h1>
+            <p>Colégio Militar do Corpo de Bombeiros <span class="turma">Turma 101</span></p>
+            <p style="margin-top: 8px; opacity: 0.85;">🚒 Transformando sobras em delícias! 💚♻️</p>
+        </div>
+    </div>
+</header>
+
+<div class="sobre-site">
+    <h2>🌍 Nosso Propósito</h2>
+    <p>O <strong>Receitaflix_101</strong>, do <strong>CMCB — Turma 101</strong>, reutiliza alimentos que seriam descartados! Cascas, talos e sobras viram delícias sustentáveis. 🌱🍳</p>
+</div>
+
+<div class="barra-pesquisa">
+    <input type="text" id="pesquisa" placeholder="🔍 Pesquise receitas...">
+</div>
+
+<div class="container">
+    <!-- RECEITAS -->
+    <div class="secao ativa" id="secao-receitas">
+        <h2>📚 Nossas Receitas</h2>
+        <div class="contador">Total: <span id="total-receitas">0</span> receitas 🥘</div>
+        <div class="sem-resultado" id="sem-resultado">
+            <span>🔍</span><br>Nenhuma receita encontrada!
+        </div>
+        <div class="grade-receitas" id="grade-receitas"></div>
+    </div>
+
+    <!-- ENVIAR RECEITA -->
+    <div class="secao" id="secao-enviar">
+        <div class="secao-envio">
+            <h2>📤 Compartilhe Sua Receita!</h2>
+            <form id="form-receita">
+                <div class="form-grupo"><label>📝 Nome *</label><input type="text" id="nome-receita" required></div>
+                <div class="form-grupo"><label>🏷️ Categoria *</label><input type="text" id="categoria" required></div>
+                <div class="form-grupo"><label>📄 Descrição *</label><textarea id="descricao" required></textarea></div>
+                <div class="form-grupo"><label>🥗 Ingredientes *</label><textarea id="ingredientes" required></textarea></div>
+                <div class="form-grupo"><label>👩‍🍳 Modo de Preparo *</label><textarea id="modo-preparo" required></textarea></div>
+                <div class="form-grupo"><label>✍️ Seu Nome</label><input type="text" id="autor"></div>
+                <button type="submit" class="btn-enviar">✅ Enviar Receita</button>
+                <div class="mensagem-sucesso" id="mensagem-sucesso">🎉 Enviada com sucesso! Obrigado! 💚</div>
+            </form>
+        </div>
+    </div>
+
+    <!-- COMUNIDADE -->
+    <div class="secao" id="secao-comunidade">
+        <h2>👥 Receitas da Comunidade</h2>
+        <div class="contador">Enviadas: <span id="total-comunidade">0</span> 🤝</div>
+        <div class="sem-resultado" id="sem-comunidade">
+            <span>📭</span><br>Seja o primeiro a compartilhar! 🚒
+        </div>
+        <div class="grade-receitas" id="grade-comunidade"></div>
+    </div>
+</div>
+
+<!-- MODAL -->
+<div id="modal-receita" class="modal">
+    <div class="modal-conteudo">
+        <span class="fechar">&times;</span>
+        <h2 id="modal-titulo"></h2>
+        <span style="background: var(--azul); color: white; padding: 0.3rem 1rem; border-radius: 20px; font-size: 0.9rem;" id="modal-categoria"></span>
+        <p style="margin: 1rem 0; font-style: italic; color: #555;" id="modal-descricao"></p>
+        <h3>🥗 Ingredientes:</h3>
+        <ul id="modal-ingredientes"></ul>
+        <h3>👩‍🍳 Modo de Preparo:</h3>
+        <ol id="modal-preparo"></ol>
+        <p style="margin-top: 1.5rem; text-align: right; color: #888; font-size: 0.9rem;" id="modal-autor"></p>
+    </div>
+</div>
+
+<footer>
+    <p class="dourado">🚒 CMCB — Turma 101 | São Luís / MA</p>
+    <p>🥘 Receitaflix_101 — Reduzindo o desperdício 🌍</p>
+    <p>© 2026 — Compartilhe, aproveite, transforme! 💚♻️</p>
+</footer>
+
+<script>
+// MENU LATERAL
+const menuBtn = document.getElementById('menuBtn');
+const menuPainel = document.getElementById('menuPainel');
+const fundoEscuro = document.getElementById('fundoEscuro');
+let menuAberto = false;
+
+function alternarMenu() {
+    menuAberto = !menuAberto;
+    menuBtn.classList.toggle('aberto', menuAberto);
+    menuPainel.classList.toggle('aberto', menuAberto);
+    fundoEscuro.classList.toggle('visivel', menuAberto);
+    document.body.style.overflow = menuAberto ? 'hidden' : 'auto';
+}
+
+menuBtn.addEventListener('click', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    alternarMenu();
+});
+
+fundoEscuro.addEventListener('click', alternarMenu);
+
+// NAVEGAÇÃO PELO MENU
+const menuItens = document.querySelectorAll('.menu-item');
+const secoes = {
+    receitas: document.getElementById('secao-receitas'),
+    enviar: document.getElementById('secao-enviar'),
+    comunidade: document.getElementById('secao-comunidade'),
+    todas: document.getElementById('secao-receitas')
+};
+
+menuItens.forEach(item => {
+    item.addEventListener('click', function() {
+        menuItens.forEach(i => i.classList.remove('ativo'));
+        this.classList.add('ativo');
+        
+        const secao = this.getAttribute('data-secao');
+        Object.values(secoes).forEach(s => s.classList.remove('ativa'));
+        
+        if (secao === 'todas') {
+            secoes.receitas.classList.add('ativa');
+            document.getElementById('secao-comunidade').style.display = 'block';
+            document.getElementById('secao-comunidade').classList.add('ativa');
+        } else {
+            secoes[secao].classList.add('ativa');
+            document.getElementById('secao-comunidade').style.display = secao === 'comunidade' ? 'block' : 'none';
+        }
+        
+        alternarMenu();
+    });
+});
+
+// BANCO DE RECEITAS
+const receitasOficiais = [
+    { id: 1, nome: "Doce de Casca de Laranja", categoria: "Doce", descricao: "Doce delicioso feito com casca de laranja!", ingredientes: ["4 cascas de laranja lavadas", "2 xícaras de açúcar", "1 xícara de água"], preparo: ["Corte as cascas em tiras", "Deixe de molho 24h", "Ferva a calda e cozinhe as cascas"], autor: "🚒 CMCB Turma 101" },
+    { id: 2, nome: "Bolo de Casca de Banana", categoria: "Bolo", descricao: "Bolo úmido e nutritivo com casca de banana!", ingredientes: ["3 cascas de banana", "3 ovos", "1 xícara de açúcar", "1 xícara de farinha"], preparo: ["Bata tudo no liquidificador", "Asse em forno médio 30min"], autor: "🚒 CMCB Turma 101" },
+    { id: 3, nome: "Bolinho de Arroz Sobrando", categoria: "Lanche", descricao: "Aproveite o arroz que sobrou do almoço!", ingredientes: ["2 xícaras de arroz cozido", "1 ovo", "1/2 xícara de farinha", "Temperos"], preparo: ["Misture tudo", "Modele os bolinhos", "Frite em óleo quente"], autor: "🚒 CMCB Turma 101" },
+    { id: 4, nome: "Sopa de Feijão com Macarrão", categoria: "Sopa", descricao: "Sobrou feijão? Vira uma sopa reconfortante!", ingredientes: ["2 xícaras de feijão", "1 litro de água", "1/2 xícara de macarrão", "Temperos"], preparo: ["Refogue temperos", "Adicione feijão e água", "Cozinhe o macarrão"], autor: "🚒 CMCB Turma 101" },
+    { id: 5, nome: "Bolo de Pão Amanhecido", categoria: "Sobremesa", descricao: "Pão velho vira bolo delicioso!", ingredientes: ["4 pães amanhecidos", "3 ovos", "1 lata de leite condensado"], preparo: ["Bata tudo no liquidificador", "Asse em banho-maria 40min"], autor: "🚒 CMCB Turma 101" },
+    { id: 6, nome: "Farofa de Casca de Banana", categoria: "Acompanhamento", descricao: "Crocante e saborosa!", ingredientes: ["4 cascas de banana picadas", "2 xícaras de farinha de mandioca", "Cebola e alho"], preparo: ["Refogue os ingredientes", "Adicione a farinha", "Tempere a gosto"], autor: "🚒 CMCB Turma 101" },
+    { id: 7, nome: "Suco de Casca de Frutas", categoria: "Bebida", descricao: "Suco nutritivo e econômico!", ingredientes: ["Cascas de 1 fruta", "500ml de água", "Açúcar a gosto"], preparo: ["Bata cascas com água", "Coe e sirva com gelo"], autor: "🚒 CMCB Turma 101" },
+    { id: 8, nome: "Bolo de Casca de Manga", categoria: "Bolo", descricao: "Aproveite toda a fruta!", ingredientes: ["3 cascas de manga", "3 ovos", "1 xícara de açúcar", "1,5 xícara de farinha"], preparo: ["Bata tudo no liquidificador", "Asse por 35min"], autor: "🚒 CMCB Turma 101" },
+    { id: 9, nome: "Arroz Cremoso de Casca de Abóbora", categoria: "Prato Principal", descricao: "Cremoso e surpreendente!", ingredientes: ["2 xícaras de arroz cozido", "1 xícara de casca de abóbora ralada", "Creme de leite"], preparo: ["Refogue as cascas", "Misture com arroz e creme de leite"], autor: "🚒 CMCB Turma 101" },
+    { id: 10, nome: "Bolo de Casca de Batata", categoria: "Salgado", descricao: "Ninguém adivinha o ingrediente secreto!", ingredientes: ["2 xícaras de casca de batata cozida", "3 ovos", "1 xícara de farinha"], preparo: ["Bata tudo no liquidificador", "Asse por 35min"], autor: "🚒 CMCB Turma 101" }
+];
+
+const maisReceitas = [
+    { id: 11, nome: "Bolinho de Casca de Batata", categoria: "Lanche", descricao: "Petisco crocante e econômico!", ingredientes: ["2 xícaras de casca de batata cozida", "1 ovo", "Farinha e temperos"], preparo: ["Misture tudo", "Modele e frite"], autor: "🚒 CMCB Turma 101" },
+    { id: 12, nome: "Doce de Casca de Mamão", categoria: "Doce", descricao: "Doce de corte tradicional!", ingredientes: ["2 xícaras de casca de mamão verde ralada", "2 xícaras de açúcar"], preparo: ["Cozinhe em fogo baixo até dar ponto"], autor: "🚒 CMCB Turma 101" },
+    { id: 13, nome: "Pudim de Pão Velho", categoria: "Sobremesa", descricao: "Clássico e delicioso!", ingredientes: ["3 pães amanhecidos", "3 ovos", "Leite condensado"], preparo: ["Bata e asse em banho-maria"], autor: "🚒 CMCB Turma 101" },
+    { id: 14, nome: "Torta de Sobras de Legumes", categoria: "Prato Principal", descricao: "Aproveite tudo da geladeira!", ingredientes: ["Massa", "2 xícaras de legumes picados", "3 ovos e leite"], preparo: ["Recheie e asse 30min"], autor: "🚒 CMCB Turma 101" },
+    { id: 15, nome: "Chá de Casca de Maçã com Canela", categoria: "Bebida", descricao: "Quentinho e reconfortante!", ingredientes: ["2 cascas de maçã", "500ml água", "Canela"], preparo: ["Ferva tudo, abafe 10min, coe"], autor: "🚒 CMCB Turma 101" },
+    { id: 16, nome: "Farofa de Talos de Couve", categoria: "Acompanhamento", descricao: "Talos viram farofa incrível!", ingredientes: ["Talos de couve", "Farinha de mandioca", "Cebola e alho"], preparo: ["Refogue e misture a farinha"], autor: "🚒 CMCB Turma 101" },
+    { id: 17, nome: "Bolo de Casca de Abóbora", categoria: "Bolo", descricao: "Cor e sabor naturais!", ingredientes: ["1 xícara de casca de abóbora amassada", "3 ovos", "Açúcar e farinha"], preparo: ["Bata tudo e asse"], autor: "🚒 CMCB Turma 101" },
+    { id: 18, nome: "Patê de Talos de Salsinha", categoria: "Aperitivo", descricao: "Talos viram patê cremoso!", ingredientes: ["Talos de salsinha", "1 lata de creme de leite", "Temperos"], preparo: ["Bata tudo no processador"], autor: "🚒 CMCB Turma 101" },
+    { id: 19, nome: "Doce de Casca de Maracujá", categoria: "Doce", descricao: "A casca do maracujá é perfeita!", ingredientes: ["Cascas de 3 maracujás", "Açúcar e água"], preparo: ["Cozinhe até dar ponto"], autor: "🚒 CMCB Turma 101" },
+    { id: 20, nome: "Caldo de Sobras de Legumes", categoria: "Sopa", descricao: "Base nutritiva para sopas!", ingredientes: ["Cascas e talos variados", "2 litros de água", "Temperos"], preparo: ["Cozinhe 30min e coe"], autor: "🚒 CMCB Turma 101" },
+    { id: 21, nome: "Bolinho de Casca de Cenoura", categoria: "Lanche", descricao: "Crocante e nutritivo!", ingredientes: ["2 xícaras de casca de cenoura cozida", "1 ovo", "Farinha"], preparo: ["Misture, modele e frite"], autor: "🚒 CMCB Turma 101" },
+    { id: 22, nome: "Doce de Casca de Melancia", categoria: "Doce", descricao: "Surpreendente e delicioso!", ingredientes: ["Casca branca de melancia", "Açúcar e limão"], preparo: ["Cozinhe em calda até cristalizar"], autor: "🚒 CMCB Turma 101" },
+    { id: 23, nome: "Pão de Casca de Frutas", categoria: "Pão", descricao: "Aproveite tudo no pão!", ingredientes: ["Cascas de frutas variadas", "Farinha, fermento, água"], preparo: ["Misture, modele e asse"], autor: "🚒 CMCB Turma 101" },
+    { id: 24, nome: "Risoto de Sobras de Arroz", categoria: "Prato Principal", descricao: "Arroz velho vira risoto!", ingredientes: ["Arroz cozido", "Caldo de legumes", "Queijo e temperos"], preparo: ["Refogue e adicione caldo aos poucos"], autor: "🚒 CMCB Turma 101" },
+    { id: 25, nome: "Suco de Casca de Abacaxi", categoria: "Bebida", descricao: "Refrescante e natural!", ingredientes: ["Casca de 1 abacaxi", "1 litro de água", "Açúcar e hortelã"], preparo: ["Bata, coe e sirva gelado"], autor: "🚒 CMCB Turma 101" },
+    { id: 26, nome: "Torta de Casca de Abobrinha", categoria: "Prato Principal", descricao: "Leve e saborosa!", ingredientes: ["Cascas de abobrinha", "Massa", "Ovos e queijo"], preparo: ["Recheie e asse 30min"], autor: "🚒 CMCB Turma 101" },
+    { id: 27, nome: "Bolinho de Talos de Brócolis", categoria: "Lanche", descricao: "Talos não vão pro lixo!", ingredientes: ["Talos de brócolis cozidos", "1 ovo", "Farinha"], preparo: ["Amasse, modele e frite"], autor: "🚒 CMCB Turma 101" },
+    { id: 28, nome: "Doce de Casca de Pera", categoria: "Doce", descricao: "Elegante e saboroso!", ingredientes: ["Cascas de 4 peras", "Açúcar e água"], preparo: ["Cozinhe em fogo baixo até engrossar"], autor: "🚒 CMCB Turma 101" },
+    { id: 29, nome: "Sopa de Casca de Tomate", categoria: "Sopa", descricao: "Aproveite tudo do tomate!", ingredientes: ["Cascas de tomate", "Caldo de legumes", "Temperos"], preparo: ["Bata e cozinhe 15min"], autor: "🚒 CMCB Turma 101" },
+    { id: 30, nome: "Bolo de Casca de Kiwi", categoria: "Bolo", descricao: "Rico em fibras e sabor!", ingredientes: ["Cascas de 3 kiwis", "3 ovos", "Açúcar, farinha, fermento"], preparo: ["Bata tudo e asse"], autor: "🚒 CMCB Turma 101" },
+    { id: 31, nome: "Farofa de Casca de Batata", categoria: "Acompanhamento", descricao: "Crocante e barata!", ingredientes: ["Cascas de batata cozidas e picadas", "Farinha de mandioca", "Cebola"], preparo: ["Refogue e misture a farinha"], autor: "🚒 CMCB Turma 101" },
+    { id: 32, nome: "Pudim de Casca de Laranja", categoria: "Sobremesa", descricao: "Aromático e delicioso!", ingredientes: ["Cascas de laranja", "3 ovos", "Leite condensado"], preparo: ["Bata e asse em banho-maria"], autor: "🚒 CMCB Turma 101" },
+    { id: 33, nome: "Bolinho de Casca de Pepino", categoria: "Lanche", descricao: "Surpreendentemente bom!", ingredientes: ["Cascas de pepino raladas", "1 ovo", "Farinha"], preparo: ["Esprema, misture e frite"], autor: "🚒 CMCB Turma 101" },
+    { id: 34, nome: "Doce de Casca de Goiaba", categoria: "Doce", descricao: "Sabor intenso da goiaba!", ingredientes: ["Cascas de 4 goiabas", "Açúcar e água"], preparo: ["Cozinhe até dar ponto de doce"], autor: "🚒 CMCB Turma 101" },
+    { id: 35, nome: "Creme de Casca de Abóbora", categoria: "Sopa", descricao: "Cremoso e reconfortante!", ingredientes: ["Cascas de abóbora", "Leite ou creme de leite", "Temperos"], preparo: ["Cozinhe, bata e tempere"], autor: "🚒 CMCB Turma 101" },
+    { id: 36, nome: "Bolo de Casca de Pêssego", categoria: "Bolo", descricao: "Úmido e perfumado!", ingredientes: ["Cascas de 4 pêssegos", "3 ovos", "Açúcar e farinha"], preparo: ["Bata tudo e asse"], autor: "🚒 CMCB Turma 101" },
+    { id: 37, nome: "Farofa de Casca de Maçã", categoria: "Acompanhamento", descricao: "Doce e salgada ao mesmo tempo!", ingredientes: ["Cascas de maçã picadas", "Farinha de mandioca", "Manteiga"], preparo: ["Refogue e misture a farinha"], autor: "🚒 CMCB Turma 101" },
+    { id: 38, nome: "Suco de Talos de Espinafre", categoria: "Bebida", descricao: "Nutritivo e refrescante!", ingredientes: ["Talos de espinafre", "Água", "Limão e mel"], preparo: ["Bata tudo e coe"], autor: "🚒 CMCB Turma 101" },
+    { id: 39, nome: "Torta de Casca de Pimentão", categoria: "Prato Principal", descricao: "Sabor intenso e colorido!", ingredientes: ["Cascas de pimentão picadas", "Massa", "Ovos e queijo"], preparo: ["Recheie e asse 30min"], autor: "🚒 CMCB Turma 101" },
+    { id: 40, nome: "Bolinho de Casca de Tomate", categoria: "Lanche", descricao: "Saboroso e suculento!", ingredientes: ["Cascas de tomate picadas", "Farinha de rosca", "Temperos"], preparo: ["Misture, modele e frite"], autor: "🚒 CMCB Turma 101" }
+];
+
+const todasReceitas = [...receitasOficiais, ...maisReceitas];
+let receitasComunidade = JSON.parse(localStorage.getItem('receitasComunidade') || '[]');
+
+// ELEMENTOS
+const gradeReceitas = document.getElementById('grade-receitas');
+const gradeComunidade = document.getElementById('grade-comunidade');
+const modal = document.getElementById('modal-receita');
+const semResultado = document.getElementById('sem-resultado');
+const semComunidade = document.getElementById('sem-comunidade');
+const campoPesquisa = document.getElementById('pesquisa');
+const formReceita = document.getElementById('form-receita');
+const totalReceitas = document.getElementById('total-receitas');
+const totalComunidade = document.getElementById('total-comunidade');
+
+// RENDERIZAR RECEITAS
+function renderizarReceitas(lista, container) {
+    container.innerHTML = '';
+    if (lista.length === 0) return;
+    
+    lista.forEach((receita) => {
+        const cartao = document.createElement('div');
+        cartao.className = 'cartao-receita';
+        cartao.innerHTML = `
+            <h3>${receita.nome}</h3>
+            <span class="categoria">${receita.categoria}</span>
+            <p>${receita.descricao}</p>
+            <span style="color: var(--azul); font-weight: 600;">Ver detalhes →</span>
+        `;
+        cartao.onclick = () => abrirModal(receita);
+        container.appendChild(cartao);
+    });
+}
+
+// ABRIR MODAL
+function abrirModal(receita) {
+    document.getElementById('modal-titulo').textContent = receita.nome;
+    document.getElementById('modal-categoria').textContent = receita.categoria;
+    document.getElementById('modal-descricao').textContent = receita.descricao;
+    
+    const listaIng = document.getElementById('modal-ingredientes');
+    listaIng.innerHTML = '';
+    receita.ingredientes.forEach(i => { const li = document.createElement('li'); li.textContent = i; listaIng.appendChild(li); });
+    
+    const listaPrep = document.getElementById('modal-preparo');
+    listaPrep.innerHTML = '';
+    receita.preparo.forEach(p => { const li = document.createElement('li'); li.textContent = p; listaPrep.appendChild(li); });
+    
+    document.getElementById('modal-autor').textContent = receita.autor;
+    modal.style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
+
+// FECHAR MODAL
+document.querySelector('.fechar').onclick = () => {
+    modal.style.display = 'none';
+    document.body.style.overflow = 'auto';
+};
+window.onclick = (e) => {
+    if (e.target === modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+};
+
+// PESQUISA
+campoPesquisa.addEventListener('input', (e) => {
+    const termo = e.target.value.toLowerCase().trim();
+    if (!termo) {
+        renderizarReceitas(todasReceitas, gradeReceitas);
+        semResultado.style.display = 'none';
+        return;
+    }
+    const filtradas = todasReceitas.filter(r => 
+        r.nome.toLowerCase().includes(termo) || r.categoria.toLowerCase().includes(termo)
+    );
+    if (filtradas.length === 0) {
+        gradeReceitas.innerHTML = '';
+        semResultado.style.display = 'block';
+    } else {
+        semResultado.style.display = 'none';
+        renderizarReceitas(filtradas, gradeReceitas);
+    }
+});
+
+// ENVIAR RECEITA
+formReceita.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const nova = {
+        nome: document.getElementById('nome-receita').value,
+        categoria: document.getElementById('categoria').value,
+        descricao: document.getElementById('descricao').value,
+        ingredientes: document.getElementById('ingredientes').value.split('\n').filter(l=>l.trim()),
+        preparo: document.getElementById('modo-preparo').value.split('\n').filter(l=>l.trim()),
+        autor: document.getElementById('autor').value || '🚒 Anônimo — CMCB Turma 101'
+    };
+    receitasComunidade.unshift(nova);
+    localStorage.setItem('receitasComunidade', JSON.stringify(receitasComunidade));
+    atualizarComunidade();
+    formReceita.reset();
+    document.getElementById('mensagem-sucesso').style.display = 'block';
+    setTimeout(() => document.getElementById('mensagem-sucesso').style.display = 'none', 5000);
+});
+
+function atualizarComunidade() {
+    if (receitasComunidade.length === 0) {
+        gradeComunidade.innerHTML = '';
+        semComunidade.style.display = 'block';
+    } else {
+        semComunidade.style.display = 'none';
+        renderizarReceitas(receitasComunidade, gradeComunidade);
+    }
+    totalComunidade.textContent = receitasComunidade.length;
+}
+
+// INICIALIZAR
+renderizarReceitas(todasReceitas, gradeReceitas);
+totalReceitas.textContent = todasReceitas.length;
+totalComunidade.textContent = receitasComunidade.length;
+</script>
+
+</body>
+</html>
