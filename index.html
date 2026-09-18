@@ -1,248 +1,720 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Receitaflix_101 — CMCB Turma 101</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        :root { 
-            --vermelho: #D81E05; --vermelho-escuro: #B01804;
-            --azul: #004A99; --azul-escuro: #003366;
-            --dourado: #FFD100; --branco: #FFFFFF;
-            --cinza-claro: #F5F7FA; --cinza: #E4E7EB;
-            --texto: #2D3748;
-        }
-        body { background: var(--cinza-claro); color: var(--texto); min-height: 100vh; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Receitaflix_101 — CMCB Turma 101</title>
 
-        /* BOTÃO MENU */
-        .menu-btn {
-            position: fixed; top: 20px; right: 20px; z-index: 1000;
-            width: 55px; height: 55px; border-radius: 50%;
-            background: linear-gradient(135deg, var(--vermelho), var(--azul));
-            border: none; cursor: pointer; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; gap: 5px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            transition: transform 0.2s ease;
-        }
-        .menu-btn:hover { transform: scale(1.1); }
-        .menu-btn span {
-            width: 7px; height: 7px; background: white; border-radius: 50%;
-            transition: all 0.3s ease;
-            pointer-events: none;
-        }
-        .menu-btn.aberto span:nth-child(1) { transform: rotate(45deg) translate(6px, 6px); }
-        .menu-btn.aberto span:nth-child(2) { opacity: 0; }
-        .menu-btn.aberto span:nth-child(3) { transform: rotate(-45deg) translate(6px, -6px); }
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif
+}
 
-        /* FUNDO ESCURO */
-        .fundo-escuro {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5); z-index: 998; display: none;
-            backdrop-filter: blur(3px);
-        }
-        .fundo-escuro.visivel { display: block; }
+:root{
+    --vermelho:#D81E05;
+    --vermelho-escuro:#B01804;
+    --azul:#004A99;
+    --azul-escuro:#003366;
+    --dourado:#FFD100;
+    --branco:#FFF;
+    --cinza-claro:#F5F7FA;
+    --cinza:#E4E7EB;
+    --texto:#2D3748
+}
 
-        /* PAINEL DO MENU */
-        .menu-painel {
-            position: fixed; top: 0; right: -320px; width: 300px; height: 100vh;
-            background: white; z-index: 999; box-shadow: -5px 0 30px rgba(0,0,0,0.2);
-            transition: right 0.3s ease;
-            padding: 80px 25px 30px;
-        }
-        .menu-painel.aberto { right: 0; }
+body{
+    background:var(--cinza-claro);
+    color:var(--texto);
+    min-height:100vh
+}
 
-        .menu-painel h3 {
-            color: var(--azul); font-size: 1.4rem; margin-bottom: 30px;
-            text-align: center; padding-bottom: 15px;
-            border-bottom: 3px solid;
-            border-image: linear-gradient(90deg, var(--vermelho), var(--azul)) 1;
-        }
-        .menu-item {
-            display: flex; align-items: center; gap: 12px; padding: 15px 20px;
-            margin-bottom: 10px; border-radius: 12px; cursor: pointer;
-            font-size: 1.05rem; font-weight: 500; color: var(--texto);
-            transition: all 0.2s ease; border-left: 4px solid transparent;
-        }
-        .menu-item:hover {
-            background: rgba(0,74,153,0.06);
-            border-left-color: var(--vermelho); transform: translateX(-3px);
-        }
-        .menu-item.ativo {
-            background: rgba(0,74,153,0.1);
-            border-left-color: var(--azul); font-weight: 600;
-        }
-        .menu-item span { font-size: 1.3rem; }
+/* BOTÃO DO MENU */
+.menu-btn{
+    position:fixed;
+    top:20px;
+    right:20px;
+    z-index:1000;
+    width:55px;
+    height:55px;
+    border-radius:50%;
+    background:linear-gradient(135deg,var(--vermelho),var(--azul));
+    border:none;
+    cursor:pointer;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:5px;
+    box-shadow:0 4px 15px rgba(0,0,0,.3);
+    transition:transform .2s ease
+}
 
-        /* CABEÇALHO */
-        header {
-            background: linear-gradient(135deg, var(--azul-escuro), var(--azul), var(--vermelho));
-            color: white; padding: 2.5rem 2rem; text-align: center;
-            box-shadow: 0 6px 25px rgba(0,0,0,0.25); position: relative;
-        }
-        .cabecalho-conteudo {
-            display: flex; align-items: center; justify-content: center; gap: 2rem; flex-wrap: wrap;
-        }
-        .brasao {
-            width: 140px; height: 160px; position: relative; flex-shrink: 0;
-        }
-        .escudo {
-            width: 100%; height: 100%;
-            background: linear-gradient(180deg, var(--azul) 0%, var(--azul-escuro) 100%);
-            clip-path: polygon(0 0, 100% 0, 100% 85%, 50% 100%, 0 85%);
-            border: 4px solid var(--dourado);
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-        }
-        .caminhao { font-size: 52px; }
-        .faixa-vermelha {
-            position: absolute; bottom: 28px; left: 0; right: 0; height: 14px;
-            background: var(--vermelho); border-top: 2px solid var(--dourado);
-            border-bottom: 2px solid var(--dourado);
-        }
-        .texto-brasao {
-            font-size: 9px; color: var(--dourado); font-weight: bold; text-align: center;
-            position: absolute; bottom: 8px;
-        }
-        .titulo-cabecalho h1 { font-size: 2.6rem; margin-bottom: 0.5rem; }
-        .titulo-cabecalho h1 span {
-            background: linear-gradient(90deg, var(--dourado), #FFF176);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-        }
-        .turma {
-            display: inline-block; background: var(--dourado); color: var(--azul-escuro);
-            padding: 3px 15px; border-radius: 20px; font-weight: bold;
-            margin-left: 10px;
-        }
+.menu-btn:hover{
+    transform:scale(1.1)
+}
 
-        /* SEÇÕES */
-        .sobre-site {
-            background: white; max-width: 900px; margin: 2rem auto; padding: 2.5rem;
-            border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-            border-top: 5px solid var(--vermelho); text-align: center;
-        }
-        .sobre-site h2 { color: var(--azul); margin-bottom: 1rem; }
-        .barra-pesquisa {
-            max-width: 650px; margin: 2rem auto; padding: 0 1rem;
-        }
-        .barra-pesquisa input {
-            width: 100%; padding: 1.1rem 1.5rem; border: 3px solid var(--cinza);
-            border-radius: 50px; font-size: 1.1rem; outline: none;
-            transition: border-color 0.2s;
-        }
-        .barra-pesquisa input:focus { border-color: var(--azul); }
-        .container { max-width: 1280px; margin: 0 auto; padding: 2rem 1rem; }
-        .secao { display: none; }
-        .secao.ativa { display: block; }
-        .container h2 {
-            text-align: center; font-size: 2rem; margin-bottom: 2rem; color: var(--azul);
-        }
-        .contador {
-            background: linear-gradient(135deg, #E8F0FE, #FEF0F0);
-            padding: 1.5rem; border-radius: 15px; text-align: center;
-            margin-bottom: 2rem; border-left: 5px solid var(--vermelho);
-        }
-        .contador span { font-size: 1.8rem; font-weight: bold; color: var(--vermelho); }
+.menu-btn span{
+    width:7px;
+    height:7px;
+    background:white;
+    border-radius:50%;
+    transition:all .3s ease;
+    pointer-events:none
+}
 
-        /* GRADE E CARTÕES — SIMPLES E RÁPIDOS */
-        .grade-receitas {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;
-        }
-        .cartao-receita {
-            background: white; border-radius: 16px; padding: 1.5rem;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08); cursor: pointer;
-            border-left: 5px solid var(--azul);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            opacity: 0; transform: translateY(20px);
-            animation: surgir 0.5s ease forwards;
-        }
-        @keyframes surgir {
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .cartao-receita:nth-child(1) { animation-delay: 0.05s; }
-        .cartao-receita:nth-child(2) { animation-delay: 0.1s; }
-        .cartao-receita:nth-child(3) { animation-delay: 0.15s; }
-        .cartao-receita:nth-child(4) { animation-delay: 0.2s; }
-        .cartao-receita:nth-child(5) { animation-delay: 0.25s; }
-        .cartao-receita:nth-child(6) { animation-delay: 0.3s; }
-        .cartao-receita:nth-child(7) { animation-delay: 0.35s; }
-        .cartao-receita:nth-child(8) { animation-delay: 0.4s; }
-        .cartao-receita:nth-child(9) { animation-delay: 0.45s; }
-        .cartao-receita:nth-child(10) { animation-delay: 0.5s; }
+.menu-btn.aberto span:nth-child(1){
+    transform:rotate(45deg) translate(6px,6px)
+}
 
-        .cartao-receita:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.12);
-            border-left-color: var(--vermelho);
-        }
-        .cartao-receita h3 { color: var(--azul-escuro); margin-bottom: 0.5rem; }
-        .cartao-receita .categoria {
-            display: inline-block; background: var(--vermelho); color: white;
-            padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.85rem;
-            margin-bottom: 0.8rem;
-        }
-        .sem-resultado { text-align: center; padding: 3rem; color: #888; display: none; }
+.menu-btn.aberto span:nth-child(2){
+    opacity:0
+}
 
-        /* MODAL */
-        .modal {
-            display: none; position: fixed; z-index: 997; left: 0; top: 0;
-            width: 100%; height: 100%; background: rgba(0,0,0,0.6);
-            overflow-y: auto;
-        }
-        .modal-conteudo {
-            background: white; max-width: 650px; margin: 5% auto; padding: 2.5rem;
-            border-radius: 20px; position: relative;
-            border-top: 5px solid var(--vermelho);
-        }
-        .fechar {
-            position: absolute; right: 1.5rem; top: 1rem; font-size: 2rem;
-            cursor: pointer; color: #888;
-        }
-        .fechar:hover { color: var(--vermelho); }
-        .modal-conteudo h2 { color: var(--azul); border-bottom: 3px solid var(--dourado); padding-bottom: 0.5rem; }
-        .modal-conteudo h3 { color: var(--vermelho); margin: 1.5rem 0 0.5rem; }
-        .modal-conteudo ul, .modal-conteudo ol { padding-left: 1.5rem; }
+.menu-btn.aberto span:nth-child(3){
+    transform:rotate(-45deg) translate(6px,-6px)
+}
 
-        /* FORMULÁRIO */
-        .secao-envio {
-            background: white; border-radius: 20px; padding: 2.5rem;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08); max-width: 650px; margin: 0 auto;
-            border-top: 5px solid var(--azul);
-        }
-        .secao-envio h2 { text-align: center; color: var(--azul); margin-bottom: 1.5rem; }
-        .form-grupo { margin-bottom: 1.2rem; }
-        .form-grupo label { display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--azul-escuro); }
-        .form-grupo input, .form-grupo textarea {
-            width: 100%; padding: 0.9rem; border: 2px solid var(--cinza);
-            border-radius: 8px; font-size: 1rem;
-        }
-        .form-grupo input:focus, .form-grupo textarea:focus { border-color: var(--azul); outline: none; }
-        .btn-enviar {
-            background: linear-gradient(135deg, var(--vermelho), var(--vermelho-escuro));
-            color: white; border: none; padding: 1rem 2rem; border-radius: 10px;
-            font-size: 1.1rem; cursor: pointer; width: 100%; font-weight: bold;
-        }
-        .btn-enviar:hover { opacity: 0.95; }
-        .mensagem-sucesso {
-            display: none; background: #E8FBEE; color: #0F6D38;
-            padding: 1.2rem; border-radius: 10px; margin-top: 1rem;
-            text-align: center; font-weight: 600;
-        }
+/* FUNDO ESCURO */
+.fundo-escuro{
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,.5);
+    z-index:998;
+    display:none;
+    backdrop-filter:blur(3px)
+}
 
-        /* RODAPÉ */
-        footer {
-            background: linear-gradient(135deg, var(--azul-escuro), var(--azul));
-            color: white; text-align: center; padding: 2.5rem; margin-top: 4rem;
-        }
-        footer .dourado { color: var(--dourado); font-weight: 600; }
+.fundo-escuro.visivel{
+    display:block
+}
 
-        /* RESPONSIVO */
-        @media (max-width: 768px) {
-            .titulo-cabecalho h1 { font-size: 1.8rem; }
-            .grade-receitas { grid-template-columns: 1fr; }
-            .menu-painel { width: 280px; }
-        }
-    </style>
+/* MENU LATERAL */
+.menu-painel{
+    position:fixed;
+    top:0;
+    right:-320px;
+    width:300px;
+    height:100vh;
+    background:white;
+    z-index:999;
+    box-shadow:-5px 0 30px rgba(0,0,0,.2);
+    transition:right .3s ease;
+    padding:80px 25px 30px
+}
+
+.menu-painel.aberto{
+    right:0
+}
+
+.menu-painel h3{
+    color:var(--azul);
+    font-size:1.4rem;
+    margin-bottom:30px;
+    text-align:center;
+    padding-bottom:15px;
+    border-bottom:3px solid;
+    border-image:linear-gradient(90deg,var(--vermelho),var(--azul)) 1
+}
+
+.menu-item{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:15px 20px;
+    margin-bottom:10px;
+    border-radius:12px;
+    cursor:pointer;
+    font-size:1.05rem;
+    font-weight:500;
+    color:var(--texto);
+    transition:all .2s ease;
+    border-left:4px solid transparent
+}
+
+.menu-item:hover{
+    background:rgba(0,74,153,.06);
+    border-left-color:var(--vermelho);
+    transform:translateX(-3px)
+}
+
+.menu-item.ativo{
+    background:rgba(0,74,153,.1);
+    border-left-color:var(--azul);
+    font-weight:600
+}
+
+.menu-item span{
+    font-size:1.3rem
+}
+
+/* CABEÇALHO */
+header{
+    background:linear-gradient(135deg,var(--azul-escuro),var(--azul),var(--vermelho));
+    color:white;
+    padding:2.5rem 2rem;
+    text-align:center;
+    box-shadow:0 6px 25px rgba(0,0,0,.25);
+    position:relative
+}
+
+.cabecalho-conteudo{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:2rem;
+    flex-wrap:wrap
+}
+
+/* BRASÃO */
+.brasao{
+    width:155px;
+    height:175px;
+    position:relative;
+    flex-shrink:0;
+    filter:drop-shadow(0 8px 12px rgba(0,0,0,.25))
+}
+
+.escudo{
+    width:100%;
+    height:100%;
+    background:
+        linear-gradient(145deg,rgba(255,255,255,.16),transparent 35%),
+        linear-gradient(180deg,var(--azul) 0%,var(--azul-escuro) 100%);
+    clip-path:polygon(
+        5% 0,
+        95% 0,
+        95% 82%,
+        88% 90%,
+        75% 95%,
+        50% 100%,
+        25% 95%,
+        12% 90%,
+        5% 82%
+    );
+    border:4px solid var(--dourado);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+    overflow:hidden;
+    box-shadow:
+        inset 0 0 0 3px rgba(255,255,255,.12),
+        inset 0 0 25px rgba(0,0,0,.25)
+}
+
+.escudo:before{
+    content:"";
+    position:absolute;
+    top:8px;
+    left:12px;
+    right:12px;
+    height:45%;
+    background:linear-gradient(
+        180deg,
+        rgba(255,255,255,.12),
+        transparent
+    );
+    border-radius:50%;
+    pointer-events:none
+}
+
+.caminhao{
+    font-size:58px;
+    z-index:2;
+    filter:drop-shadow(0 3px 3px rgba(0,0,0,.35));
+    margin-top:-12px
+}
+
+.faixa-vermelha{
+    position:absolute;
+    bottom:34px;
+    left:0;
+    right:0;
+    height:16px;
+    background:linear-gradient(
+        90deg,
+        var(--vermelho-escuro),
+        var(--vermelho),
+        var(--vermelho-escuro)
+    );
+    border-top:2px solid var(--dourado);
+    border-bottom:2px solid var(--dourado);
+    z-index:3
+}
+
+.texto-brasao{
+    font-size:8px;
+    line-height:1.15;
+    letter-spacing:.4px;
+    color:var(--dourado);
+    font-weight:800;
+    text-align:center;
+    position:absolute;
+    bottom:9px;
+    z-index:4;
+    text-shadow:0 1px 2px rgba(0,0,0,.5)
+}
+
+.titulo-cabecalho h1{
+    font-size:2.6rem;
+    margin-bottom:.5rem
+}
+
+.titulo-cabecalho h1 span{
+    background:linear-gradient(
+        90deg,
+        var(--dourado),
+        #FFF176
+    );
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent
+}
+
+.turma{
+    display:inline-block;
+    background:var(--dourado);
+    color:var(--azul-escuro);
+    padding:3px 15px;
+    border-radius:20px;
+    font-weight:bold;
+    margin-left:10px
+}
+
+/* SOBRE */
+.sobre-site{
+    background:white;
+    max-width:900px;
+    margin:2rem auto;
+    padding:2.5rem;
+    border-radius:20px;
+    box-shadow:0 4px 20px rgba(0,0,0,.08);
+    border-top:5px solid var(--vermelho);
+    text-align:center
+}
+
+.sobre-site h2{
+    color:var(--azul);
+    margin-bottom:1rem
+}
+
+/* PESQUISA */
+.barra-pesquisa{
+    max-width:650px;
+    margin:2rem auto;
+    padding:0 1rem
+}
+
+.barra-pesquisa input{
+    width:100%;
+    padding:1.1rem 1.5rem;
+    border:3px solid var(--cinza);
+    border-radius:50px;
+    font-size:1.1rem;
+    outline:none;
+    transition:border-color .2s
+}
+
+.barra-pesquisa input:focus{
+    border-color:var(--azul)
+}
+
+/* CATEGORIAS */
+.categorias-container{
+    max-width:1100px;
+    margin:0 auto 1rem;
+    padding:0 1rem
+}
+
+.categorias-titulo{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:8px;
+    color:var(--azul-escuro);
+    margin-bottom:1rem;
+    font-size:1.05rem
+}
+
+.categorias{
+    display:flex;
+    justify-content:center;
+    gap:10px;
+    flex-wrap:wrap
+}
+
+.categoria-btn{
+    border:2px solid var(--cinza);
+    background:white;
+    color:var(--texto);
+    padding:.7rem 1rem;
+    border-radius:25px;
+    cursor:pointer;
+    font-weight:600;
+    font-size:.9rem;
+    transition:all .2s ease;
+    box-shadow:0 2px 7px rgba(0,0,0,.06)
+}
+
+.categoria-btn:hover{
+    transform:translateY(-2px);
+    border-color:var(--azul);
+    color:var(--azul);
+    box-shadow:0 4px 12px rgba(0,74,153,.15)
+}
+
+.categoria-btn.ativo{
+    background:linear-gradient(
+        135deg,
+        var(--azul),
+        var(--vermelho)
+    );
+    border-color:transparent;
+    color:white;
+    box-shadow:0 4px 12px rgba(0,74,153,.25)
+}
+
+/* CONTEÚDO */
+.container{
+    max-width:1280px;
+    margin:0 auto;
+    padding:2rem 1rem
+}
+
+.secao{
+    display:none
+}
+
+.secao.ativa{
+    display:block
+}
+
+.container h2{
+    text-align:center;
+    font-size:2rem;
+    margin-bottom:2rem;
+    color:var(--azul)
+}
+
+/* CONTADOR */
+.contador{
+    background:linear-gradient(
+        135deg,
+        #E8F0FE,
+        #FEF0F0
+    );
+    padding:1.5rem;
+    border-radius:15px;
+    text-align:center;
+    margin-bottom:2rem;
+    border-left:5px solid var(--vermelho)
+}
+
+.contador span{
+    font-size:1.8rem;
+    font-weight:bold;
+    color:var(--vermelho)
+}
+
+/* CARDS */
+.grade-receitas{
+    display:grid;
+    grid-template-columns:
+        repeat(auto-fill,minmax(300px,1fr));
+    gap:1.5rem
+}
+
+.cartao-receita{
+    background:white;
+    border-radius:18px;
+    padding:1.5rem;
+    box-shadow:0 3px 14px rgba(0,0,0,.08);
+    cursor:pointer;
+    border-left:5px solid var(--azul);
+    transition:
+        transform .25s ease,
+        box-shadow .25s ease,
+        border-left-color .25s ease;
+    opacity:0;
+    transform:translateY(20px);
+    animation:surgir .5s ease forwards;
+    position:relative;
+    overflow:hidden
+}
+
+.cartao-receita:before{
+    content:"";
+    position:absolute;
+    top:0;
+    left:0;
+    width:100%;
+    height:4px;
+    background:linear-gradient(
+        90deg,
+        var(--azul),
+        var(--dourado),
+        var(--vermelho)
+    )
+}
+
+@keyframes surgir{
+    to{
+        opacity:1;
+        transform:translateY(0)
+    }
+}
+
+.cartao-receita:hover{
+    transform:translateY(-6px);
+    box-shadow:0 9px 25px rgba(0,0,0,.13);
+    border-left-color:var(--vermelho)
+}
+
+.cartao-receita h3{
+    color:var(--azul-escuro);
+    margin-bottom:.6rem;
+    line-height:1.3
+}
+
+.cartao-receita p{
+    color:#5a6573;
+    line-height:1.5;
+    margin-bottom:1rem
+}
+
+.cartao-receita .categoria{
+    display:inline-block;
+    background:linear-gradient(
+        135deg,
+        var(--vermelho),
+        var(--vermelho-escuro)
+    );
+    color:white;
+    padding:.35rem .85rem;
+    border-radius:20px;
+    font-size:.82rem;
+    font-weight:600;
+    margin-bottom:.8rem
+}
+
+/* SEM RESULTADO */
+.sem-resultado{
+    text-align:center;
+    padding:3rem;
+    color:#888;
+    display:none
+}
+
+/* MODAL */
+.modal{
+    display:none;
+    position:fixed;
+    z-index:997;
+    left:0;
+    top:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,.6);
+    overflow-y:auto
+}
+
+.modal-conteudo{
+    background:white;
+    max-width:700px;
+    margin:4% auto;
+    padding:2.5rem;
+    border-radius:22px;
+    position:relative;
+    border-top:5px solid var(--vermelho);
+    box-shadow:0 15px 45px rgba(0,0,0,.25);
+    animation:aparecerModal .25s ease
+}
+
+@keyframes aparecerModal{
+    from{
+        opacity:0;
+        transform:translateY(15px) scale(.98)
+    }
+    to{
+        opacity:1;
+        transform:translateY(0) scale(1)
+    }
+}
+
+.fechar{
+    position:absolute;
+    right:1.5rem;
+    top:1rem;
+    font-size:2rem;
+    cursor:pointer;
+    color:#888
+}
+
+.fechar:hover{
+    color:var(--vermelho)
+}
+
+.modal-conteudo h2{
+    color:var(--azul);
+    border-bottom:3px solid var(--dourado);
+    padding-bottom:.5rem
+}
+
+.modal-conteudo h3{
+    color:var(--vermelho);
+    margin:1.5rem 0 .5rem;
+    position:relative;
+    padding-left:10px
+}
+
+.modal-conteudo h3:before{
+    content:"";
+    position:absolute;
+    left:0;
+    top:3px;
+    bottom:3px;
+    width:4px;
+    background:var(--dourado);
+    border-radius:5px
+}
+
+.modal-conteudo ul,
+.modal-conteudo ol{
+    padding-left:1.5rem
+}
+
+.modal-conteudo ul li,
+.modal-conteudo ol li{
+    margin-bottom:.7rem;
+    line-height:1.5
+}
+
+/* FORMULÁRIO */
+.secao-envio{
+    background:white;
+    border-radius:20px;
+    padding:2.5rem;
+    box-shadow:0 4px 20px rgba(0,0,0,.08);
+    max-width:650px;
+    margin:0 auto;
+    border-top:5px solid var(--azul)
+}
+
+.secao-envio h2{
+    text-align:center;
+    color:var(--azul);
+    margin-bottom:1.5rem
+}
+
+.form-grupo{
+    margin-bottom:1.2rem
+}
+
+.form-grupo label{
+    display:block;
+    margin-bottom:.5rem;
+    font-weight:600;
+    color:var(--azul-escuro)
+}
+
+.form-grupo input,
+.form-grupo textarea{
+    width:100%;
+    padding:.9rem;
+    border:2px solid var(--cinza);
+    border-radius:8px;
+    font-size:1rem
+}
+
+.form-grupo input:focus,
+.form-grupo textarea:focus{
+    border-color:var(--azul);
+    outline:none
+}
+
+.btn-enviar{
+    background:linear-gradient(
+        135deg,
+        var(--vermelho),
+        var(--vermelho-escuro)
+    );
+    color:white;
+    border:none;
+    padding:1rem 2rem;
+    border-radius:10px;
+    font-size:1.1rem;
+    cursor:pointer;
+    width:100%;
+    font-weight:bold
+}
+
+.mensagem-sucesso{
+    display:none;
+    background:#E8FBEE;
+    color:#0F6D38;
+    padding:1.2rem;
+    border-radius:10px;
+    margin-top:1rem;
+    text-align:center;
+    font-weight:600
+}
+
+/* RODAPÉ */
+footer{
+    background:linear-gradient(
+        135deg,
+        var(--azul-escuro),
+        var(--azul)
+    );
+    color:white;
+    text-align:center;
+    padding:2.5rem;
+    margin-top:4rem
+}
+
+footer .dourado{
+    color:var(--dourado);
+    font-weight:600
+}
+
+/* RESPONSIVIDADE */
+@media(max-width:768px){
+
+    .titulo-cabecalho h1{
+        font-size:1.8rem
+    }
+
+    .grade-receitas{
+        grid-template-columns:1fr
+    }
+
+    .menu-painel{
+        width:280px
+    }
+
+    .categorias{
+        gap:7px
+    }
+
+    .categoria-btn{
+        padding:.6rem .8rem;
+        font-size:.82rem
+    }
+
+    .modal-conteudo{
+        margin:8% 1rem;
+        padding:2rem 1.5rem
+    }
+}
+</style>
 </head>
+
 <body>
 
 <!-- BOTÃO MENU -->
@@ -252,330 +724,2672 @@
     <span></span>
 </button>
 
-<!-- FUNDO ESCURO -->
 <div class="fundo-escuro" id="fundoEscuro"></div>
 
-<!-- PAINEL DO MENU -->
+<!-- MENU LATERAL -->
 <div class="menu-painel" id="menuPainel">
+
     <h3>🚒 Navegação</h3>
+
     <div class="menu-item ativo" data-secao="receitas">
-        <span>📖</span> Ver Receitas
+        <span>🍽️</span>
+        Ver Receitas
     </div>
+
     <div class="menu-item" data-secao="enviar">
-        <span>📤</span> Enviar Receita
+        <span>📝</span>
+        Enviar Receita
     </div>
+
     <div class="menu-item" data-secao="comunidade">
-        <span>👥</span> Comunidade
+        <span>👨‍🍳</span>
+        Comunidade
     </div>
-    <div class="menu-item" data-secao="todas">
-        <span>📂</span> Ver Tudo
+
+    <div class="menu-item" data-secao="receitas">
+        <span>📚</span>
+        Ver Tudo
     </div>
+
 </div>
 
+<!-- CABEÇALHO -->
 <header>
+
     <div class="cabecalho-conteudo">
+
         <div class="brasao">
+
             <div class="escudo">
+
                 <div class="caminhao">🚒</div>
+
                 <div class="faixa-vermelha"></div>
-                <div class="texto-brasao">COLÉGIO MILITAR<br>DO CORPO DE BOMBEIROS</div>
+
+                <div class="texto-brasao">
+                    COLÉGIO MILITAR DO<br>
+                    CORPO DE BOMBEIROS
+                </div>
+
             </div>
+
         </div>
+
         <div class="titulo-cabecalho">
-            <h1>🍽️ Receitaflix_<span>101</span></h1>
-            <p>Colégio Militar do Corpo de Bombeiros <span class="turma">Turma 101</span></p>
-            <p style="margin-top: 8px; opacity: 0.85;">🚒 Transformando sobras em delícias! 💚♻️</p>
+
+            <h1>
+                🍽️ Receitaflix_<span>101</span>
+            </h1>
+
+            <p>
+                Colégio Militar do Corpo de Bombeiros
+                <span class="turma">Turma 101</span>
+            </p>
+
+            <p style="margin-top:12px">
+                🚒 Transformando sobras em delícias! 💚♻️
+            </p>
+
         </div>
+
     </div>
+
 </header>
 
-<div class="sobre-site">
-    <h2>🌍 Nosso Propósito</h2>
-    <p>O <strong>Receitaflix_101</strong>, do <strong>CMCB — Turma 101</strong>, reutiliza alimentos que seriam descartados! Cascas, talos e sobras viram delícias sustentáveis. 🌱🍳</p>
-</div>
+<!-- SOBRE -->
+<section class="sobre-site">
 
+    <h2>🌱 Nossa missão</h2>
+
+    <p>
+        O <strong>Receitaflix_101</strong>, do
+        <strong>CMCB — Turma 101</strong>, reutiliza alimentos
+        que seriam descartados!
+    </p>
+
+    <p style="margin-top:10px">
+        Cascas, talos, folhas, bagaços e sobras próprias
+        para consumo podem ganhar novas receitas,
+        ajudando a reduzir o desperdício. 🌱🍳
+    </p>
+
+</section>
+
+<!-- PESQUISA -->
 <div class="barra-pesquisa">
-    <input type="text" id="pesquisa" placeholder="🔍 Pesquise receitas...">
+
+    <input
+        type="text"
+        id="pesquisa"
+        placeholder="🔎 Procure uma receita..."
+    >
+
 </div>
 
-<div class="container">
-    <!-- RECEITAS -->
-    <div class="secao ativa" id="secao-receitas">
-        <h2>📚 Nossas Receitas</h2>
-        <div class="contador">Total: <span id="total-receitas">0</span> receitas 🥘</div>
-        <div class="sem-resultado" id="sem-resultado">
-            <span>🔍</span><br>Nenhuma receita encontrada!
-        </div>
-        <div class="grade-receitas" id="grade-receitas"></div>
+<!-- CATEGORIAS -->
+<div class="categorias-container">
+
+    <div class="categorias-titulo">
+        <span>🍴</span>
+        <strong>Escolha uma categoria</strong>
     </div>
+
+    <div class="categorias">
+
+        <button
+            class="categoria-btn ativo"
+            data-categoria="Todas">
+            🍽️ Todas
+        </button>
+
+        <button
+            class="categoria-btn"
+            data-categoria="Doce">
+            🍬 Doce
+        </button>
+
+        <button
+            class="categoria-btn"
+            data-categoria="Bolo">
+            🎂 Bolo
+        </button>
+
+        <button
+            class="categoria-btn"
+            data-categoria="Salgado">
+            🥟 Salgado
+        </button>
+
+        <button
+            class="categoria-btn"
+            data-categoria="Acompanhamento">
+            🥗 Acompanhamento
+        </button>
+
+        <button
+            class="categoria-btn"
+            data-categoria="Sobremesa">
+            🍮 Sobremesa
+        </button>
+
+        <button
+            class="categoria-btn"
+            data-categoria="Prato Principal">
+            🍛 Prato Principal
+        </button>
+
+        <button
+            class="categoria-btn"
+            data-categoria="Bebida">
+            🥤 Bebida
+        </button>
+
+    </div>
+
+</div>
+
+<!-- CONTEÚDO PRINCIPAL -->
+<div class="container">
+
+    <!-- RECEITAS -->
+    <section class="secao ativa" id="secao-receitas">
+
+        <h2>📚 Nossas Receitas</h2>
+
+        <div class="contador">
+            Temos
+            <span id="total-receitas">0</span>
+            receitas disponíveis! 🚒
+        </div>
+
+        <div
+            class="sem-resultado"
+            id="sem-resultado">
+
+            <h3>😕 Nenhuma receita encontrada.</h3>
+
+            <p>
+                Tente outro nome ou escolha outra categoria.
+            </p>
+
+        </div>
+
+        <div
+            class="grade-receitas"
+            id="grade-receitas">
+        </div>
+
+    </section>
 
     <!-- ENVIAR RECEITA -->
-    <div class="secao" id="secao-enviar">
+    <section class="secao" id="secao-enviar">
+
         <div class="secao-envio">
-            <h2>📤 Compartilhe Sua Receita!</h2>
+
+            <h2>📝 Envie sua receita</h2>
+
             <form id="form-receita">
-                <div class="form-grupo"><label>📝 Nome *</label><input type="text" id="nome-receita" required></div>
-                <div class="form-grupo"><label>🏷️ Categoria *</label><input type="text" id="categoria" required></div>
-                <div class="form-grupo"><label>📄 Descrição *</label><textarea id="descricao" required></textarea></div>
-                <div class="form-grupo"><label>🥗 Ingredientes *</label><textarea id="ingredientes" required></textarea></div>
-                <div class="form-grupo"><label>👩‍🍳 Modo de Preparo *</label><textarea id="modo-preparo" required></textarea></div>
-                <div class="form-grupo"><label>✍️ Seu Nome</label><input type="text" id="autor"></div>
-                <button type="submit" class="btn-enviar">✅ Enviar Receita</button>
-                <div class="mensagem-sucesso" id="mensagem-sucesso">🎉 Enviada com sucesso! Obrigado! 💚</div>
+
+                <div class="form-grupo">
+
+                    <label for="nome-receita">
+                        Nome da receita
+                    </label>
+
+                    <input
+                        id="nome-receita"
+                        type="text"
+                        required
+                    >
+
+                </div>
+
+                <div class="form-grupo">
+
+                    <label for="categoria">
+                        Categoria
+                    </label>
+
+                    <select
+                        id="categoria"
+                        style="width:100%;padding:.9rem;border:2px solid var(--cinza);border-radius:8px;font-size:1rem"
+                        required>
+
+                        <option value="">
+                            Escolha uma categoria
+                        </option>
+
+                        <option>Doce</option>
+                        <option>Bolo</option>
+                        <option>Salgado</option>
+                        <option>Acompanhamento</option>
+                        <option>Sobremesa</option>
+                        <option>Prato Principal</option>
+                        <option>Bebida</option>
+                        <option>Lanche</option>
+                        <option>Sopa</option>
+
+                    </select>
+
+                </div>
+
+                <div class="form-grupo">
+
+                    <label for="descricao">
+                        Descrição
+                    </label>
+
+                    <textarea
+                        id="descricao"
+                        rows="3"
+                        required>
+                    </textarea>
+
+                </div>
+
+                <div class="form-grupo">
+
+                    <label for="ingredientes">
+                        Ingredientes
+                    </label>
+
+                    <textarea
+                        id="ingredientes"
+                        rows="6"
+                        placeholder="Um ingrediente por linha"
+                        required>
+                    </textarea>
+
+                </div>
+
+                <div class="form-grupo">
+
+                    <label for="modo-preparo">
+                        Modo de preparo
+                    </label>
+
+                    <textarea
+                        id="modo-preparo"
+                        rows="8"
+                        placeholder="Uma etapa por linha"
+                        required>
+                    </textarea>
+
+                </div>
+
+                <div class="form-grupo">
+
+                    <label for="autor">
+                        Seu nome
+                    </label>
+
+                    <input
+                        id="autor"
+                        type="text"
+                        placeholder="Opcional"
+                    >
+
+                </div>
+
+                <button
+                    class="btn-enviar"
+                    type="submit">
+
+                    🚀 Enviar Receita
+
+                </button>
+
+                <div
+                    class="mensagem-sucesso"
+                    id="mensagem-sucesso">
+
+                    ✅ Receita enviada com sucesso
+                    para a comunidade!
+
+                </div>
+
             </form>
+
         </div>
-    </div>
+
+    </section>
 
     <!-- COMUNIDADE -->
-    <div class="secao" id="secao-comunidade">
-        <h2>👥 Receitas da Comunidade</h2>
-        <div class="contador">Enviadas: <span id="total-comunidade">0</span> 🤝</div>
-        <div class="sem-resultado" id="sem-comunidade">
-            <span>📭</span><br>Seja o primeiro a compartilhar! 🚒
+    <section class="secao" id="secao-comunidade">
+
+        <h2>👨‍🍳 Receitas da Comunidade</h2>
+
+        <div class="contador">
+
+            A comunidade já enviou
+            <span id="total-comunidade">0</span>
+            receitas! 💚
+
         </div>
-        <div class="grade-receitas" id="grade-comunidade"></div>
-    </div>
+
+        <div
+            class="sem-resultado"
+            id="sem-comunidade">
+
+            <h3>👨‍🍳 Ainda não temos receitas da comunidade.</h3>
+
+            <p>
+                Seja o primeiro a enviar uma!
+            </p>
+
+        </div>
+
+        <div
+            class="grade-receitas"
+            id="grade-comunidade">
+        </div>
+
+    </section>
+
 </div>
 
 <!-- MODAL -->
-<div id="modal-receita" class="modal">
+<div
+    class="modal"
+    id="modal-receita">
+
     <div class="modal-conteudo">
-        <span class="fechar">&times;</span>
+
+        <span class="fechar">
+            &times;
+        </span>
+
         <h2 id="modal-titulo"></h2>
-        <span style="background: var(--azul); color: white; padding: 0.3rem 1rem; border-radius: 20px; font-size: 0.9rem;" id="modal-categoria"></span>
-        <p style="margin: 1rem 0; font-style: italic; color: #555;" id="modal-descricao"></p>
-        <h3>🥗 Ingredientes:</h3>
+
+        <div
+            style="margin-top:10px;margin-bottom:10px">
+
+            <span
+                class="categoria"
+                id="modal-categoria"
+                style="display:inline-block;background:var(--vermelho);color:white;padding:5px 12px;border-radius:20px;font-size:.85rem;font-weight:bold">
+            </span>
+
+        </div>
+
+        <p
+            id="modal-descricao"
+            style="line-height:1.6">
+        </p>
+
+        <h3>🛒 Ingredientes</h3>
+
         <ul id="modal-ingredientes"></ul>
-        <h3>👩‍🍳 Modo de Preparo:</h3>
+
+        <h3>👨‍🍳 Modo de preparo</h3>
+
         <ol id="modal-preparo"></ol>
-        <p style="margin-top: 1.5rem; text-align: right; color: #888; font-size: 0.9rem;" id="modal-autor"></p>
+
+        <p
+            id="modal-autor"
+            style="margin-top:20px;color:var(--azul);font-weight:bold">
+        </p>
+
     </div>
+
 </div>
 
+<!-- RODAPÉ -->
 <footer>
-    <p class="dourado">🚒 CMCB — Turma 101 | São Luís / MA</p>
-    <p>🥘 Receitaflix_101 — Reduzindo o desperdício 🌍</p>
-    <p>© 2026 — Compartilhe, aproveite, transforme! 💚♻️</p>
+
+    <p>
+        🚒 CMCB — Turma 101 |
+        São Luís / MA
+    </p>
+
+    <p
+        class="dourado"
+        style="margin-top:10px">
+
+        🥘 Receitaflix_101 —
+        Reduzindo o desperdício 🌍
+
+    </p>
+
+    <p style="margin-top:15px;font-size:.9rem">
+
+        © 2026 —
+        Compartilhe, aproveite, transforme!
+        💚♻️
+
+    </p>
+
 </footer>
 
 <script>
-// MENU LATERAL
-const menuBtn = document.getElementById('menuBtn');
-const menuPainel = document.getElementById('menuPainel');
-const fundoEscuro = document.getElementById('fundoEscuro');
-let menuAberto = false;
 
-function alternarMenu() {
-    menuAberto = !menuAberto;
-    menuBtn.classList.toggle('aberto', menuAberto);
-    menuPainel.classList.toggle('aberto', menuAberto);
-    fundoEscuro.classList.toggle('visivel', menuAberto);
-    document.body.style.overflow = menuAberto ? 'hidden' : 'auto';
+/* ============================
+   MENU
+============================ */
+
+const menuBtn =
+    document.getElementById("menuBtn");
+
+const menuPainel =
+    document.getElementById("menuPainel");
+
+const fundoEscuro =
+    document.getElementById("fundoEscuro");
+
+function abrirMenu(){
+
+    menuBtn.classList.add("aberto");
+
+    menuPainel.classList.add("aberto");
+
+    fundoEscuro.classList.add("visivel");
+
 }
 
-menuBtn.addEventListener('click', function(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    alternarMenu();
-});
+function fecharMenu(){
 
-fundoEscuro.addEventListener('click', alternarMenu);
+    menuBtn.classList.remove("aberto");
 
-// NAVEGAÇÃO PELO MENU
-const menuItens = document.querySelectorAll('.menu-item');
-const secoes = {
-    receitas: document.getElementById('secao-receitas'),
-    enviar: document.getElementById('secao-enviar'),
-    comunidade: document.getElementById('secao-comunidade'),
-    todas: document.getElementById('secao-receitas')
-};
+    menuPainel.classList.remove("aberto");
 
-menuItens.forEach(item => {
-    item.addEventListener('click', function() {
-        menuItens.forEach(i => i.classList.remove('ativo'));
-        this.classList.add('ativo');
-        
-        const secao = this.getAttribute('data-secao');
-        Object.values(secoes).forEach(s => s.classList.remove('ativa'));
-        
-        if (secao === 'todas') {
-            secoes.receitas.classList.add('ativa');
-            document.getElementById('secao-comunidade').style.display = 'block';
-            document.getElementById('secao-comunidade').classList.add('ativa');
-        } else {
-            secoes[secao].classList.add('ativa');
-            document.getElementById('secao-comunidade').style.display = secao === 'comunidade' ? 'block' : 'none';
+    fundoEscuro.classList.remove("visivel");
+
+}
+
+menuBtn.addEventListener(
+    "click",
+    () => {
+
+        if(
+            menuPainel.classList.contains("aberto")
+        ){
+
+            fecharMenu();
+
+        }else{
+
+            abrirMenu();
+
         }
-        
-        alternarMenu();
+
+    }
+);
+
+fundoEscuro.addEventListener(
+    "click",
+    fecharMenu
+);
+
+
+/* ============================
+   NAVEGAÇÃO
+============================ */
+
+const secoes =
+    document.querySelectorAll(".secao");
+
+const itensMenu =
+    document.querySelectorAll(".menu-item");
+
+function mostrarSecao(nome){
+
+    secoes.forEach(secao => {
+
+        secao.classList.remove("ativa");
+
     });
+
+    const alvo =
+        document.getElementById(
+            "secao-" + nome
+        );
+
+    if(alvo){
+
+        alvo.classList.add("ativa");
+
+    }
+
+    itensMenu.forEach(item => {
+
+        item.classList.remove("ativo");
+
+        if(
+            item.dataset.secao === nome
+        ){
+
+            item.classList.add("ativo");
+
+        }
+
+    });
+
+    fecharMenu();
+
+    window.scrollTo({
+        top:0,
+        behavior:"smooth"
+    });
+
+}
+
+itensMenu.forEach(item => {
+
+    item.addEventListener(
+        "click",
+        () => {
+
+            mostrarSecao(
+                item.dataset.secao
+            );
+
+        }
+    );
+
 });
 
-// BANCO DE RECEITAS
+
+/* ============================
+   RECEITAS
+============================ */
+
 const receitasOficiais = [
-    { id: 1, nome: "Doce de Casca de Laranja", categoria: "Doce", descricao: "Doce delicioso feito com casca de laranja!", ingredientes: ["4 cascas de laranja lavadas", "2 xícaras de açúcar", "1 xícara de água"], preparo: ["Corte as cascas em tiras", "Deixe de molho 24h", "Ferva a calda e cozinhe as cascas"], autor: "🚒 CMCB Turma 101" },
-    { id: 2, nome: "Bolo de Casca de Banana", categoria: "Bolo", descricao: "Bolo úmido e nutritivo com casca de banana!", ingredientes: ["3 cascas de banana", "3 ovos", "1 xícara de açúcar", "1 xícara de farinha"], preparo: ["Bata tudo no liquidificador", "Asse em forno médio 30min"], autor: "🚒 CMCB Turma 101" },
-    { id: 3, nome: "Bolinho de Arroz Sobrando", categoria: "Lanche", descricao: "Aproveite o arroz que sobrou do almoço!", ingredientes: ["2 xícaras de arroz cozido", "1 ovo", "1/2 xícara de farinha", "Temperos"], preparo: ["Misture tudo", "Modele os bolinhos", "Frite em óleo quente"], autor: "🚒 CMCB Turma 101" },
-    { id: 4, nome: "Sopa de Feijão com Macarrão", categoria: "Sopa", descricao: "Sobrou feijão? Vira uma sopa reconfortante!", ingredientes: ["2 xícaras de feijão", "1 litro de água", "1/2 xícara de macarrão", "Temperos"], preparo: ["Refogue temperos", "Adicione feijão e água", "Cozinhe o macarrão"], autor: "🚒 CMCB Turma 101" },
-    { id: 5, nome: "Bolo de Pão Amanhecido", categoria: "Sobremesa", descricao: "Pão velho vira bolo delicioso!", ingredientes: ["4 pães amanhecidos", "3 ovos", "1 lata de leite condensado"], preparo: ["Bata tudo no liquidificador", "Asse em banho-maria 40min"], autor: "🚒 CMCB Turma 101" },
-    { id: 6, nome: "Farofa de Casca de Banana", categoria: "Acompanhamento", descricao: "Crocante e saborosa!", ingredientes: ["4 cascas de banana picadas", "2 xícaras de farinha de mandioca", "Cebola e alho"], preparo: ["Refogue os ingredientes", "Adicione a farinha", "Tempere a gosto"], autor: "🚒 CMCB Turma 101" },
-    { id: 7, nome: "Suco de Casca de Frutas", categoria: "Bebida", descricao: "Suco nutritivo e econômico!", ingredientes: ["Cascas de 1 fruta", "500ml de água", "Açúcar a gosto"], preparo: ["Bata cascas com água", "Coe e sirva com gelo"], autor: "🚒 CMCB Turma 101" },
-    { id: 8, nome: "Bolo de Casca de Manga", categoria: "Bolo", descricao: "Aproveite toda a fruta!", ingredientes: ["3 cascas de manga", "3 ovos", "1 xícara de açúcar", "1,5 xícara de farinha"], preparo: ["Bata tudo no liquidificador", "Asse por 35min"], autor: "🚒 CMCB Turma 101" },
-    { id: 9, nome: "Arroz Cremoso de Casca de Abóbora", categoria: "Prato Principal", descricao: "Cremoso e surpreendente!", ingredientes: ["2 xícaras de arroz cozido", "1 xícara de casca de abóbora ralada", "Creme de leite"], preparo: ["Refogue as cascas", "Misture com arroz e creme de leite"], autor: "🚒 CMCB Turma 101" },
-    { id: 10, nome: "Bolo de Casca de Batata", categoria: "Salgado", descricao: "Ninguém adivinha o ingrediente secreto!", ingredientes: ["2 xícaras de casca de batata cozida", "3 ovos", "1 xícara de farinha"], preparo: ["Bata tudo no liquidificador", "Asse por 35min"], autor: "🚒 CMCB Turma 101" }
+
+{
+id:1,
+nome:"Doce de Casca de Banana",
+categoria:"Doce",
+descricao:"Uma forma simples de aproveitar cascas de banana maduras.",
+ingredientes:[
+"4 cascas de banana bem lavadas",
+"1 xícara de açúcar",
+"1/2 xícara de água",
+"Canela a gosto"
+],
+preparo:[
+"Lave muito bem as bananas antes de retirar as cascas.",
+"Corte as cascas em tiras pequenas.",
+"Leve as cascas ao fogo com a água e cozinhe até ficarem macias.",
+"Acrescente o açúcar e a canela e cozinhe em fogo baixo, mexendo até formar uma calda mais espessa.",
+"Espere amornar antes de servir."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:2,
+nome:"Bolo de Casca de Banana",
+categoria:"Bolo",
+descricao:"As cascas da banana são incorporadas à massa para reduzir o desperdício.",
+ingredientes:[
+"4 cascas de banana bem lavadas",
+"2 ovos",
+"1 xícara de açúcar",
+"2 xícaras de farinha de trigo",
+"1/2 xícara de óleo",
+"1 colher de fermento"
+],
+preparo:[
+"Lave bem as bananas e retire as cascas.",
+"Bata as cascas com os ovos e o óleo até formar uma mistura homogênea.",
+"Em uma tigela, misture a farinha e o açúcar.",
+"Acrescente a mistura líquida aos poucos.",
+"Por último, coloque o fermento.",
+"Leve ao forno preaquecido a 180 °C por aproximadamente 35 minutos."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:3,
+nome:"Farofa de Talos",
+categoria:"Acompanhamento",
+descricao:"Talos de verduras que seriam descartados podem enriquecer uma farofa.",
+ingredientes:[
+"1 xícara de talos de couve ou outras verduras",
+"2 xícaras de farinha de mandioca",
+"1/2 cebola",
+"1 colher de óleo",
+"Sal a gosto"
+],
+preparo:[
+"Lave bem os talos e pique-os em pedaços pequenos.",
+"Refogue a cebola no óleo.",
+"Acrescente os talos e cozinhe até ficarem macios.",
+"Adicione a farinha de mandioca aos poucos.",
+"Misture bem e ajuste o sal.",
+"Sirva ainda quente."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:4,
+nome:"Suco de Casca de Abacaxi",
+categoria:"Bebida",
+descricao:"A casca do abacaxi ganha uma nova utilização em uma bebida refrescante.",
+ingredientes:[
+"Casca de 1 abacaxi bem higienizada",
+"1 litro de água",
+"Açúcar a gosto",
+"Folhas de hortelã"
+],
+preparo:[
+"Lave muito bem o abacaxi antes de retirar a casca.",
+"Coloque as cascas em uma panela com a água.",
+"Ferva por alguns minutos para extrair o sabor.",
+"Coe o líquido e deixe esfriar.",
+"Acrescente hortelã e açúcar a gosto.",
+"Leve à geladeira antes de servir."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:5,
+nome:"Bolinho de Arroz",
+categoria:"Salgado",
+descricao:"O arroz cozido que sobrou pode virar um delicioso bolinho.",
+ingredientes:[
+"2 xícaras de arroz cozido",
+"1 ovo",
+"1/2 xícara de farinha",
+"2 colheres de queijo ralado",
+"Cheiro-verde a gosto",
+"Sal e temperos"
+],
+preparo:[
+"Coloque o arroz em uma tigela.",
+"Acrescente o ovo, a farinha e o queijo.",
+"Misture até formar uma massa que possa ser modelada.",
+"Acrescente os temperos.",
+"Modele pequenos bolinhos.",
+"Asse em forno a 200 °C até ficarem dourados."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:6,
+nome:"Sopa de Talos",
+categoria:"Sopa",
+descricao:"Talos de verduras podem ser utilizados em uma sopa nutritiva.",
+ingredientes:[
+"2 xícaras de talos variados",
+"1 batata",
+"1 cenoura",
+"1/2 cebola",
+"1 litro de água",
+"Sal e temperos"
+],
+preparo:[
+"Lave cuidadosamente todos os talos.",
+"Pique os ingredientes em pedaços pequenos.",
+"Refogue a cebola.",
+"Adicione os talos, a batata e a cenoura.",
+"Cubra com água e cozinhe até tudo ficar macio.",
+"Sirva quente."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:7,
+nome:"Doce de Casca de Laranja",
+categoria:"Doce",
+descricao:"As cascas de laranja podem ser transformadas em um doce aromático.",
+ingredientes:[
+"Cascas de 3 laranjas",
+"1 xícara de açúcar",
+"1 xícara de água",
+"Canela a gosto"
+],
+preparo:[
+"Lave muito bem as laranjas.",
+"Corte as cascas em tiras finas.",
+"Deixe as cascas de molho em água e troque a água algumas vezes para diminuir o amargor.",
+"Cozinhe as cascas com água e açúcar.",
+"Mexa até a calda engrossar.",
+"Deixe esfriar antes de servir."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:8,
+nome:"Torta de Sobras de Legumes",
+categoria:"Prato Principal",
+descricao:"Legumes cozidos que sobraram podem ser transformados em uma torta.",
+ingredientes:[
+"2 xícaras de legumes cozidos",
+"2 ovos",
+"1 xícara de leite",
+"1 xícara de farinha",
+"1 colher de fermento",
+"Sal e temperos"
+],
+preparo:[
+"Pique os legumes que sobraram.",
+"Em uma tigela, misture os ovos, o leite e a farinha.",
+"Acrescente os legumes.",
+"Tempere a mistura.",
+"Adicione o fermento por último.",
+"Coloque em uma forma untada.",
+"Asse a 180 °C por aproximadamente 35 minutos."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:9,
+nome:"Pudim de Pão Amanhecido",
+categoria:"Sobremesa",
+descricao:"Pães amanhecidos podem ganhar uma nova vida como sobremesa.",
+ingredientes:[
+"3 pães amanhecidos",
+"500 ml de leite",
+"2 ovos",
+"1/2 xícara de açúcar",
+"Canela a gosto"
+],
+preparo:[
+"Corte os pães em pedaços pequenos.",
+"Coloque os pedaços em uma tigela e cubra com o leite.",
+"Espere alguns minutos para o pão amolecer.",
+"Acrescente os ovos, o açúcar e a canela.",
+"Misture até ficar uniforme.",
+"Coloque em uma forma untada.",
+"Asse a 180 °C até firmar."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:10,
+nome:"Chips de Casca de Cenoura",
+categoria:"Salgado",
+descricao:"Cascas bem lavadas de cenoura podem virar um petisco crocante.",
+ingredientes:[
+"Cascas de cenoura bem lavadas",
+"1 fio de azeite",
+"Sal",
+"Ervas a gosto"
+],
+preparo:[
+"Lave muito bem as cenouras.",
+"Retire as cascas e seque-as.",
+"Tempere com azeite, sal e ervas.",
+"Espalhe em uma assadeira.",
+"Asse a 200 °C até ficarem crocantes.",
+"Espere esfriar antes de servir."
+],
+autor:"🚒 CMCB Turma 101"
+}
+
 ];
+
+/*
+========================================
+MAIS RECEITAS
+========================================
+*/
 
 const maisReceitas = [
-    { id: 11, nome: "Bolinho de Casca de Batata", categoria: "Lanche", descricao: "Petisco crocante e econômico!", ingredientes: ["2 xícaras de casca de batata cozida", "1 ovo", "Farinha e temperos"], preparo: ["Misture tudo", "Modele e frite"], autor: "🚒 CMCB Turma 101" },
-    { id: 12, nome: "Doce de Casca de Mamão", categoria: "Doce", descricao: "Doce de corte tradicional!", ingredientes: ["2 xícaras de casca de mamão verde ralada", "2 xícaras de açúcar"], preparo: ["Cozinhe em fogo baixo até dar ponto"], autor: "🚒 CMCB Turma 101" },
-    { id: 13, nome: "Pudim de Pão Velho", categoria: "Sobremesa", descricao: "Clássico e delicioso!", ingredientes: ["3 pães amanhecidos", "3 ovos", "Leite condensado"], preparo: ["Bata e asse em banho-maria"], autor: "🚒 CMCB Turma 101" },
-    { id: 14, nome: "Torta de Sobras de Legumes", categoria: "Prato Principal", descricao: "Aproveite tudo da geladeira!", ingredientes: ["Massa", "2 xícaras de legumes picados", "3 ovos e leite"], preparo: ["Recheie e asse 30min"], autor: "🚒 CMCB Turma 101" },
-    { id: 15, nome: "Chá de Casca de Maçã com Canela", categoria: "Bebida", descricao: "Quentinho e reconfortante!", ingredientes: ["2 cascas de maçã", "500ml água", "Canela"], preparo: ["Ferva tudo, abafe 10min, coe"], autor: "🚒 CMCB Turma 101" },
-    { id: 16, nome: "Farofa de Talos de Couve", categoria: "Acompanhamento", descricao: "Talos viram farofa incrível!", ingredientes: ["Talos de couve", "Farinha de mandioca", "Cebola e alho"], preparo: ["Refogue e misture a farinha"], autor: "🚒 CMCB Turma 101" },
-    { id: 17, nome: "Bolo de Casca de Abóbora", categoria: "Bolo", descricao: "Cor e sabor naturais!", ingredientes: ["1 xícara de casca de abóbora amassada", "3 ovos", "Açúcar e farinha"], preparo: ["Bata tudo e asse"], autor: "🚒 CMCB Turma 101" },
-    { id: 18, nome: "Patê de Talos de Salsinha", categoria: "Aperitivo", descricao: "Talos viram patê cremoso!", ingredientes: ["Talos de salsinha", "1 lata de creme de leite", "Temperos"], preparo: ["Bata tudo no processador"], autor: "🚒 CMCB Turma 101" },
-    { id: 19, nome: "Doce de Casca de Maracujá", categoria: "Doce", descricao: "A casca do maracujá é perfeita!", ingredientes: ["Cascas de 3 maracujás", "Açúcar e água"], preparo: ["Cozinhe até dar ponto"], autor: "🚒 CMCB Turma 101" },
-    { id: 20, nome: "Caldo de Sobras de Legumes", categoria: "Sopa", descricao: "Base nutritiva para sopas!", ingredientes: ["Cascas e talos variados", "2 litros de água", "Temperos"], preparo: ["Cozinhe 30min e coe"], autor: "🚒 CMCB Turma 101" },
-    { id: 21, nome: "Bolinho de Casca de Cenoura", categoria: "Lanche", descricao: "Crocante e nutritivo!", ingredientes: ["2 xícaras de casca de cenoura cozida", "1 ovo", "Farinha"], preparo: ["Misture, modele e frite"], autor: "🚒 CMCB Turma 101" },
-    { id: 22, nome: "Doce de Casca de Melancia", categoria: "Doce", descricao: "Surpreendente e delicioso!", ingredientes: ["Casca branca de melancia", "Açúcar e limão"], preparo: ["Cozinhe em calda até cristalizar"], autor: "🚒 CMCB Turma 101" },
-    { id: 23, nome: "Pão de Casca de Frutas", categoria: "Pão", descricao: "Aproveite tudo no pão!", ingredientes: ["Cascas de frutas variadas", "Farinha, fermento, água"], preparo: ["Misture, modele e asse"], autor: "🚒 CMCB Turma 101" },
-    { id: 24, nome: "Risoto de Sobras de Arroz", categoria: "Prato Principal", descricao: "Arroz velho vira risoto!", ingredientes: ["Arroz cozido", "Caldo de legumes", "Queijo e temperos"], preparo: ["Refogue e adicione caldo aos poucos"], autor: "🚒 CMCB Turma 101" },
-    { id: 25, nome: "Suco de Casca de Abacaxi", categoria: "Bebida", descricao: "Refrescante e natural!", ingredientes: ["Casca de 1 abacaxi", "1 litro de água", "Açúcar e hortelã"], preparo: ["Bata, coe e sirva gelado"], autor: "🚒 CMCB Turma 101" },
-    { id: 26, nome: "Torta de Casca de Abobrinha", categoria: "Prato Principal", descricao: "Leve e saborosa!", ingredientes: ["Cascas de abobrinha", "Massa", "Ovos e queijo"], preparo: ["Recheie e asse 30min"], autor: "🚒 CMCB Turma 101" },
-    { id: 27, nome: "Bolinho de Talos de Brócolis", categoria: "Lanche", descricao: "Talos não vão pro lixo!", ingredientes: ["Talos de brócolis cozidos", "1 ovo", "Farinha"], preparo: ["Amasse, modele e frite"], autor: "🚒 CMCB Turma 101" },
-    { id: 28, nome: "Doce de Casca de Pera", categoria: "Doce", descricao: "Elegante e saboroso!", ingredientes: ["Cascas de 4 peras", "Açúcar e água"], preparo: ["Cozinhe em fogo baixo até engrossar"], autor: "🚒 CMCB Turma 101" },
-    { id: 29, nome: "Sopa de Casca de Tomate", categoria: "Sopa", descricao: "Aproveite tudo do tomate!", ingredientes: ["Cascas de tomate", "Caldo de legumes", "Temperos"], preparo: ["Bata e cozinhe 15min"], autor: "🚒 CMCB Turma 101" },
-    { id: 30, nome: "Bolo de Casca de Kiwi", categoria: "Bolo", descricao: "Rico em fibras e sabor!", ingredientes: ["Cascas de 3 kiwis", "3 ovos", "Açúcar, farinha, fermento"], preparo: ["Bata tudo e asse"], autor: "🚒 CMCB Turma 101" },
-    { id: 31, nome: "Farofa de Casca de Batata", categoria: "Acompanhamento", descricao: "Crocante e barata!", ingredientes: ["Cascas de batata cozidas e picadas", "Farinha de mandioca", "Cebola"], preparo: ["Refogue e misture a farinha"], autor: "🚒 CMCB Turma 101" },
-    { id: 32, nome: "Pudim de Casca de Laranja", categoria: "Sobremesa", descricao: "Aromático e delicioso!", ingredientes: ["Cascas de laranja", "3 ovos", "Leite condensado"], preparo: ["Bata e asse em banho-maria"], autor: "🚒 CMCB Turma 101" },
-    { id: 33, nome: "Bolinho de Casca de Pepino", categoria: "Lanche", descricao: "Surpreendentemente bom!", ingredientes: ["Cascas de pepino raladas", "1 ovo", "Farinha"], preparo: ["Esprema, misture e frite"], autor: "🚒 CMCB Turma 101" },
-    { id: 34, nome: "Doce de Casca de Goiaba", categoria: "Doce", descricao: "Sabor intenso da goiaba!", ingredientes: ["Cascas de 4 goiabas", "Açúcar e água"], preparo: ["Cozinhe até dar ponto de doce"], autor: "🚒 CMCB Turma 101" },
-    { id: 35, nome: "Creme de Casca de Abóbora", categoria: "Sopa", descricao: "Cremoso e reconfortante!", ingredientes: ["Cascas de abóbora", "Leite ou creme de leite", "Temperos"], preparo: ["Cozinhe, bata e tempere"], autor: "🚒 CMCB Turma 101" },
-    { id: 36, nome: "Bolo de Casca de Pêssego", categoria: "Bolo", descricao: "Úmido e perfumado!", ingredientes: ["Cascas de 4 pêssegos", "3 ovos", "Açúcar e farinha"], preparo: ["Bata tudo e asse"], autor: "🚒 CMCB Turma 101" },
-    { id: 37, nome: "Farofa de Casca de Maçã", categoria: "Acompanhamento", descricao: "Doce e salgada ao mesmo tempo!", ingredientes: ["Cascas de maçã picadas", "Farinha de mandioca", "Manteiga"], preparo: ["Refogue e misture a farinha"], autor: "🚒 CMCB Turma 101" },
-    { id: 38, nome: "Suco de Talos de Espinafre", categoria: "Bebida", descricao: "Nutritivo e refrescante!", ingredientes: ["Talos de espinafre", "Água", "Limão e mel"], preparo: ["Bata tudo e coe"], autor: "🚒 CMCB Turma 101" },
-    { id: 39, nome: "Torta de Casca de Pimentão", categoria: "Prato Principal", descricao: "Sabor intenso e colorido!", ingredientes: ["Cascas de pimentão picadas", "Massa", "Ovos e queijo"], preparo: ["Recheie e asse 30min"], autor: "🚒 CMCB Turma 101" },
-    { id: 40, nome: "Bolinho de Casca de Tomate", categoria: "Lanche", descricao: "Saboroso e suculento!", ingredientes: ["Cascas de tomate picadas", "Farinha de rosca", "Temperos"], preparo: ["Misture, modele e frite"], autor: "🚒 CMCB Turma 101" }
+
+{
+id:11,
+nome:"Pão de Talos de Verduras",
+categoria:"Pão",
+descricao:"Talos de verduras podem ser incorporados à massa de pão.",
+ingredientes:[
+"1 xícara de talos cozidos",
+"3 xícaras de farinha",
+"1 colher de fermento biológico",
+"1 colher de açúcar",
+"1 colher de óleo",
+"Água morna"
+],
+preparo:[
+"Cozinhe e pique bem os talos.",
+"Misture o fermento, o açúcar e um pouco de água morna.",
+"Acrescente a farinha e os talos.",
+"Adicione água aos poucos até formar uma massa.",
+"Sove por alguns minutos.",
+"Deixe descansar até crescer.",
+"Modele os pães e asse até dourarem."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:12,
+nome:"Geleia de Casca de Maçã",
+categoria:"Doce",
+descricao:"Cascas de maçã bem higienizadas podem ser aproveitadas em uma geleia.",
+ingredientes:[
+"Cascas de 5 maçãs",
+"1 xícara de açúcar",
+"1 xícara de água",
+"Suco de meio limão"
+],
+preparo:[
+"Lave muito bem as maçãs.",
+"Corte as cascas em pedaços.",
+"Cozinhe as cascas com água.",
+"Coe o líquido.",
+"Acrescente açúcar e limão.",
+"Cozinhe até atingir consistência de geleia."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:13,
+nome:"Arroz Colorido de Sobras",
+categoria:"Prato Principal",
+descricao:"Sobras próprias de legumes podem transformar um arroz simples.",
+ingredientes:[
+"2 xícaras de arroz cozido",
+"1 xícara de legumes cozidos",
+"1/2 cebola",
+"1 dente de alho",
+"1 fio de óleo"
+],
+preparo:[
+"Pique os legumes em pedaços pequenos.",
+"Refogue alho e cebola.",
+"Adicione os legumes.",
+"Acrescente o arroz cozido.",
+"Misture cuidadosamente.",
+"Aqueça bem e sirva."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:14,
+nome:"Vitamina de Banana Madura",
+categoria:"Bebida",
+descricao:"Bananas maduras próprias para consumo podem ser aproveitadas em uma vitamina.",
+ingredientes:[
+"2 bananas maduras",
+"300 ml de leite",
+"1 colher de aveia",
+"Canela"
+],
+preparo:[
+"Retire qualquer parte machucada da banana.",
+"Corte as bananas.",
+"Coloque todos os ingredientes no liquidificador.",
+"Bata até ficar cremoso.",
+"Sirva imediatamente."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:15,
+nome:"Bolinho de Talos de Couve",
+categoria:"Salgado",
+descricao:"Talos de couve bem lavados podem ser usados em bolinhos assados.",
+ingredientes:[
+"1 xícara de talos de couve",
+"1 ovo",
+"1/2 xícara de farinha",
+"1/2 cebola",
+"Sal e temperos"
+],
+preparo:[
+"Lave e pique os talos.",
+"Cozinhe rapidamente se estiverem muito firmes.",
+"Misture com o ovo e a cebola.",
+"Adicione a farinha.",
+"Tempere.",
+"Modele os bolinhos.",
+"Asse até dourar."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:16,
+nome:"Creme de Talos de Brócolis",
+categoria:"Sopa",
+descricao:"Os talos de brócolis podem ser transformados em um creme quente.",
+ingredientes:[
+"2 xícaras de talos de brócolis",
+"1 batata",
+"1/2 cebola",
+"700 ml de água",
+"Sal e temperos"
+],
+preparo:[
+"Lave muito bem os talos.",
+"Pique a batata e os talos.",
+"Refogue a cebola.",
+"Adicione os legumes e a água.",
+"Cozinhe até ficarem macios.",
+"Bata cuidadosamente até formar um creme.",
+"Volte ao fogo para aquecer."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:17,
+nome:"Farofa de Folhas de Cenoura",
+categoria:"Acompanhamento",
+descricao:"Folhas de cenoura próprias para consumo podem enriquecer uma farofa.",
+ingredientes:[
+"1 xícara de folhas de cenoura",
+"2 xícaras de farinha de mandioca",
+"1/2 cebola",
+"1 fio de óleo",
+"Sal"
+],
+preparo:[
+"Lave muito bem as folhas.",
+"Pique-as.",
+"Refogue a cebola.",
+"Adicione as folhas.",
+"Cozinhe até murcharem.",
+"Acrescente a farinha.",
+"Misture e ajuste o sal."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:18,
+nome:"Doce de Casca de Melancia",
+categoria:"Doce",
+descricao:"A parte branca da casca da melancia pode ser aproveitada em um doce.",
+ingredientes:[
+"2 xícaras da parte branca da casca",
+"1 xícara de açúcar",
+"1/2 xícara de água",
+"Canela"
+],
+preparo:[
+"Retire a parte verde externa da casca.",
+"Use somente a parte branca.",
+"Corte em cubos pequenos.",
+"Cozinhe com água até amaciar.",
+"Adicione açúcar e canela.",
+"Cozinhe até formar uma calda espessa."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:19,
+nome:"Torta de Pão Amanhecido",
+categoria:"Salgado",
+descricao:"Pães amanhecidos podem ser utilizados como base para uma torta salgada.",
+ingredientes:[
+"3 pães amanhecidos",
+"2 ovos",
+"1 xícara de leite",
+"1 xícara de legumes picados",
+"Queijo a gosto",
+"Sal e temperos"
+],
+preparo:[
+"Corte os pães.",
+"Coloque-os em uma tigela com o leite.",
+"Deixe amolecer.",
+"Acrescente os ovos.",
+"Misture os legumes e os temperos.",
+"Coloque em uma forma.",
+"Finalize com queijo.",
+"Asse até dourar."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:20,
+nome:"Doce de Banana Madura",
+categoria:"Sobremesa",
+descricao:"Bananas maduras próprias para consumo podem virar um doce simples.",
+ingredientes:[
+"4 bananas maduras",
+"1/2 xícara de açúcar",
+"Canela"
+],
+preparo:[
+"Amasse as bananas.",
+"Coloque em uma panela.",
+"Acrescente o açúcar.",
+"Cozinhe em fogo baixo.",
+"Misture constantemente.",
+"Acrescente canela.",
+"Cozinhe até engrossar."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:21,
+nome:"Molho de Talos de Salsa",
+categoria:"Acompanhamento",
+descricao:"Os talos de salsa podem ser utilizados para preparar um molho saboroso.",
+ingredientes:[
+"1 xícara de talos de salsa",
+"1/2 xícara de azeite",
+"1 dente de alho",
+"Suco de limão",
+"Sal"
+],
+preparo:[
+"Lave muito bem os talos.",
+"Pique os talos.",
+"Coloque todos os ingredientes no liquidificador.",
+"Bata até obter um molho.",
+"Ajuste o sal.",
+"Mantenha refrigerado até servir."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:22,
+nome:"Panqueca de Arroz Sobrado",
+categoria:"Salgado",
+descricao:"Arroz cozido que sobrou pode virar uma massa de panqueca.",
+ingredientes:[
+"2 xícaras de arroz cozido",
+"1 ovo",
+"1 xícara de leite",
+"1/2 xícara de farinha",
+"Sal"
+],
+preparo:[
+"Coloque o arroz no liquidificador.",
+"Adicione o ovo, leite e farinha.",
+"Bata até formar uma massa.",
+"Aqueça uma frigideira.",
+"Coloque uma pequena quantidade de massa.",
+"Cozinhe dos dois lados.",
+"Recheie com legumes ou outras sobras próprias para consumo."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:23,
+nome:"Purê de Casca de Abóbora",
+categoria:"Acompanhamento",
+descricao:"A casca bem cozida da abóbora pode ser utilizada em um purê.",
+ingredientes:[
+"2 xícaras de casca de abóbora",
+"1 colher de manteiga ou azeite",
+"1/2 cebola",
+"Leite",
+"Sal"
+],
+preparo:[
+"Lave muito bem a abóbora.",
+"Utilize somente a casca própria para consumo.",
+"Cozinhe até ficar macia.",
+"Refogue a cebola.",
+"Acrescente a casca cozida.",
+"Amasse ou processe.",
+"Adicione leite aos poucos até atingir a textura desejada."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:24,
+nome:"Salada de Talos de Brócolis",
+categoria:"Acompanhamento",
+descricao:"Talos de brócolis podem ser utilizados em uma salada crocante.",
+ingredientes:[
+"1 xícara de talos de brócolis",
+"1 cenoura",
+"1/2 cebola",
+"Suco de limão",
+"Azeite",
+"Sal"
+],
+preparo:[
+"Lave bem os talos.",
+"Corte em fatias finas.",
+"Cozinhe rapidamente.",
+"Deixe esfriar.",
+"Misture com a cenoura e a cebola.",
+"Tempere com limão, azeite e sal.",
+"Mantenha refrigerado."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:25,
+nome:"Bolo de Bagaço de Coco",
+categoria:"Bolo",
+descricao:"O bagaço que sobra ao preparar leite de coco pode entrar na massa.",
+ingredientes:[
+"1 xícara de bagaço de coco",
+"1 xícara de farinha",
+"1/2 xícara de açúcar",
+"2 colheres de manteiga",
+"1 ovo"
+],
+preparo:[
+"Separe o bagaço fresco do coco.",
+"Misture com manteiga, ovo e açúcar.",
+"Acrescente a farinha aos poucos.",
+"Modele a massa ou coloque em pequenas porções.",
+"Asse a 180 °C até dourar."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:26,
+nome:"Refresco de Casca de Limão",
+categoria:"Bebida",
+descricao:"Cascas de limão bem lavadas podem aromatizar uma bebida.",
+ingredientes:[
+"Cascas de 2 limões",
+"1 litro de água",
+"Açúcar a gosto",
+"Hortelã"
+],
+preparo:[
+"Lave muito bem os limões.",
+"Coloque as cascas em água.",
+"Ferva por alguns minutos.",
+"Coe.",
+"Acrescente açúcar e hortelã.",
+"Leve à geladeira."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:27,
+nome:"Croquete de Sobras de Legumes",
+categoria:"Salgado",
+descricao:"Legumes cozidos que sobraram podem virar croquetes assados.",
+ingredientes:[
+"2 xícaras de legumes cozidos",
+"1 ovo",
+"1/2 xícara de farinha",
+"Farinha de rosca",
+"Sal e temperos"
+],
+preparo:[
+"Pique ou amasse os legumes.",
+"Misture com o ovo e a farinha.",
+"Tempere.",
+"Modele os croquetes.",
+"Passe na farinha de rosca.",
+"Coloque em uma assadeira.",
+"Asse a 200 °C até dourar."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:28,
+nome:"Cuscuz com Sobras de Legumes",
+categoria:"Prato Principal",
+descricao:"Legumes cozidos que sobraram podem enriquecer um cuscuz.",
+ingredientes:[
+"2 xícaras de flocos de milho",
+"1 xícara de legumes cozidos",
+"1/2 cebola",
+"Água",
+"Sal"
+],
+preparo:[
+"Hidrate os flocos de milho.",
+"Deixe descansar alguns minutos.",
+"Refogue a cebola.",
+"Acrescente os legumes.",
+"Cozinhe o cuscuz no vapor.",
+"Misture os legumes ao cuscuz pronto."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:29,
+nome:"Biscoito de Bagaço de Coco",
+categoria:"Doce",
+descricao:"Bagaço de coco fresco pode ser aproveitado em biscoitos.",
+ingredientes:[
+"1 xícara de bagaço de coco",
+"1 xícara de farinha",
+"1/2 xícara de açúcar",
+"2 colheres de manteiga",
+"1 ovo"
+],
+preparo:[
+"Misture o bagaço com a manteiga.",
+"Acrescente o ovo e o açúcar.",
+"Adicione farinha até formar uma massa.",
+"Modele pequenos biscoitos.",
+"Coloque em uma assadeira.",
+"Asse a 180 °C até as bordas dourarem."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:30,
+nome:"Sopa de Talos de Couve-Flor",
+categoria:"Prato Principal",
+descricao:"Talos e folhas aproveitáveis de couve-flor podem formar uma sopa.",
+ingredientes:[
+"2 xícaras de talos e folhas",
+"1 batata",
+"1/2 cebola",
+"700 ml de água",
+"Sal e temperos"
+],
+preparo:[
+"Lave muito bem os talos e folhas.",
+"Corte em pedaços pequenos.",
+"Refogue a cebola.",
+"Acrescente os ingredientes.",
+"Cozinhe até ficarem macios.",
+"Bata cuidadosamente até formar um creme.",
+"Ajuste os temperos e sirva."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:31,
+nome:"Compota de Casca de Maçã",
+categoria:"Sobremesa",
+descricao:"Cascas de maçã podem ser aproveitadas em uma compota aromática.",
+ingredientes:[
+"Cascas de 5 maçãs",
+"1/2 xícara de açúcar",
+"1 xícara de água",
+"Canela"
+],
+preparo:[
+"Lave muito bem as maçãs.",
+"Retire as cascas.",
+"Coloque as cascas em uma panela.",
+"Adicione água, açúcar e canela.",
+"Cozinhe em fogo baixo.",
+"Deixe a calda reduzir.",
+"Espere esfriar antes de servir."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:32,
+nome:"Pudim de Banana Madura",
+categoria:"Sobremesa",
+descricao:"Bananas maduras próprias para consumo podem virar um pudim.",
+ingredientes:[
+"3 bananas maduras",
+"2 ovos",
+"1 xícara de leite",
+"1/2 xícara de açúcar",
+"1/2 xícara de aveia"
+],
+preparo:[
+"Amasse as bananas.",
+"Misture com os ovos.",
+"Acrescente leite, açúcar e aveia.",
+"Mexa até ficar uniforme.",
+"Coloque em forma untada.",
+"Asse a 180 °C até firmar.",
+"Espere amornar antes de servir."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:33,
+nome:"Arroz com Talos de Couve",
+categoria:"Prato Principal",
+descricao:"Talos de couve podem ser incorporados ao arroz.",
+ingredientes:[
+"2 xícaras de arroz cozido",
+"1 xícara de talos de couve",
+"1/2 cebola",
+"1 dente de alho",
+"Óleo",
+"Sal"
+],
+preparo:[
+"Lave e pique os talos.",
+"Refogue alho e cebola.",
+"Acrescente os talos.",
+"Cozinhe até amaciarem.",
+"Adicione o arroz.",
+"Misture bem.",
+"Aqueça e sirva."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:34,
+nome:"Doce de Casca de Abacaxi",
+categoria:"Doce",
+descricao:"A casca do abacaxi pode ser transformada em um doce.",
+ingredientes:[
+"Cascas de 1 abacaxi",
+"1 xícara de açúcar",
+"2 xícaras de água",
+"Canela"
+],
+preparo:[
+"Lave muito bem o abacaxi.",
+"Corte as cascas.",
+"Cozinhe com água até amaciar.",
+"Acrescente açúcar e canela.",
+"Cozinhe até a calda engrossar.",
+"Deixe esfriar."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:35,
+nome:"Omelete de Talos de Brócolis",
+categoria:"Prato Principal",
+descricao:"Talos de brócolis podem ser usados no recheio de uma omelete.",
+ingredientes:[
+"1 xícara de talos de brócolis",
+"3 ovos",
+"1/2 cebola",
+"2 colheres de queijo",
+"Sal"
+],
+preparo:[
+"Lave os talos.",
+"Pique em pedaços pequenos.",
+"Cozinhe rapidamente se necessário.",
+"Bata os ovos.",
+"Misture todos os ingredientes.",
+"Coloque em uma frigideira untada.",
+"Cozinhe dos dois lados até o centro ficar completamente cozido."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:36,
+nome:"Refresco de Casca de Melão",
+categoria:"Bebida",
+descricao:"Parte aproveitável da casca do melão pode contribuir para uma bebida refrescante.",
+ingredientes:[
+"Parte aproveitável da casca de 1 melão",
+"700 ml de água",
+"Suco de limão",
+"Açúcar"
+],
+preparo:[
+"Higienize muito bem o melão.",
+"Utilize apenas a parte própria para consumo.",
+"Bata com água.",
+"Coe se desejar.",
+"Adicione limão.",
+"Adoce a gosto.",
+"Mantenha refrigerado."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:37,
+nome:"Farofa de Talos de Beterraba",
+categoria:"Acompanhamento",
+descricao:"Talos de beterraba podem dar sabor e cor à farofa.",
+ingredientes:[
+"1 xícara de talos de beterraba",
+"2 xícaras de farinha de mandioca",
+"1/2 cebola",
+"Óleo",
+"Sal"
+],
+preparo:[
+"Lave os talos.",
+"Pique em pedaços pequenos.",
+"Refogue a cebola.",
+"Adicione os talos.",
+"Cozinhe até amaciarem.",
+"Acrescente a farinha.",
+"Misture e ajuste os temperos."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:38,
+nome:"Bolinho de Talos de Espinafre",
+categoria:"Salgado",
+descricao:"Talos de espinafre podem virar bolinhos assados.",
+ingredientes:[
+"1 xícara de talos de espinafre",
+"1 ovo",
+"1/2 xícara de farinha",
+"1/2 cebola",
+"Sal"
+],
+preparo:[
+"Lave bem os talos.",
+"Pique em pedaços pequenos.",
+"Misture com ovo e cebola.",
+"Adicione farinha.",
+"Tempere.",
+"Modele os bolinhos.",
+"Asse até dourarem."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:39,
+nome:"Bolo de Bagaço de Maçã",
+categoria:"Bolo",
+descricao:"O bagaço que sobra do suco de maçã pode ser incorporado ao bolo.",
+ingredientes:[
+"1 xícara de bagaço de maçã",
+"2 ovos",
+"1 xícara de açúcar",
+"1,5 xícara de farinha",
+"1/2 xícara de óleo",
+"1 colher de fermento"
+],
+preparo:[
+"Use o bagaço fresco, sem sementes.",
+"Misture com ovos, açúcar e óleo.",
+"Acrescente a farinha.",
+"Misture até ficar uniforme.",
+"Adicione o fermento.",
+"Asse a 180 °C por aproximadamente 35 minutos."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:40,
+nome:"Bolo de Bagaço de Abacaxi",
+categoria:"Bolo",
+descricao:"A fibra que sobra depois de preparar o abacaxi pode ser aproveitada em um bolo.",
+ingredientes:[
+"1 xícara de bagaço de abacaxi",
+"2 ovos",
+"1 xícara de açúcar",
+"1,5 xícara de farinha",
+"1/2 xícara de óleo",
+"1 colher de fermento"
+],
+preparo:[
+"Separe o bagaço fresco.",
+"Retire partes duras.",
+"Misture com os ovos, açúcar e óleo.",
+"Adicione a farinha.",
+"Acrescente o fermento.",
+"Asse a 180 °C até dourar e firmar."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+/* 41–70 */
+
+{
+id:41,
+nome:"Bolo de Bagaço de Cenoura",
+categoria:"Bolo",
+descricao:"O bagaço que sobra do suco vira um bolo macio e saboroso.",
+ingredientes:[
+"1 xícara de bagaço de cenoura bem escorrido",
+"2 ovos",
+"1 xícara de açúcar",
+"1,5 xícara de farinha de trigo",
+"1/2 xícara de óleo",
+"1 colher de fermento"
+],
+preparo:[
+"Depois de preparar o suco de cenoura, aproveite o bagaço que ficou na peneira, desde que esteja fresco e bem conservado.",
+"Misture o bagaço com os ovos, o açúcar e o óleo até formar uma massa uniforme.",
+"Acrescente a farinha aos poucos e, por último, incorpore o fermento delicadamente.",
+"Coloque em forma untada e asse em forno preaquecido a 180 °C por cerca de 30 a 40 minutos, até dourar e o centro estar firme."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:42,
+nome:"Patê de Talos de Couve",
+categoria:"Acompanhamento",
+descricao:"Talos que seriam descartados ganham uma nova função no lanche.",
+ingredientes:[
+"1 xícara de talos de couve bem lavados e picados",
+"1/2 cebola",
+"2 colheres de requeijão ou creme de ricota",
+"1 colher de azeite",
+"Sal e temperos"
+],
+preparo:[
+"Lave muito bem os talos e retire apenas partes machucadas ou impróprias para consumo.",
+"Cozinhe os talos rapidamente até ficarem macios e escorra bem.",
+"Refogue a cebola e os talos com o azeite e deixe amornar.",
+"Bata ou processe com o requeijão até obter uma pasta cremosa. Ajuste os temperos e mantenha refrigerado até servir."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:43,
+nome:"Geleia de Casca de Abacaxi",
+categoria:"Doce",
+descricao:"A casca do abacaxi vira uma geleia aromática.",
+ingredientes:[
+"Casca de 1 abacaxi bem higienizada",
+"2 xícaras de água",
+"1 xícara de açúcar",
+"Suco de 1/2 limão"
+],
+preparo:[
+"Lave muito bem o abacaxi antes de retirar a casca e corte as partes muito duras.",
+"Ferva as cascas na água até liberar bastante sabor e depois coe o líquido.",
+"Leve o líquido ao fogo com o açúcar e o limão, mexendo regularmente.",
+"Cozinhe até reduzir e ficar com consistência de geleia. Espere esfriar e armazene em recipiente limpo e refrigerado."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:44,
+nome:"Chips de Casca de Batata",
+categoria:"Salgado",
+descricao:"Cascas bem lavadas ficam crocantes e viram um acompanhamento diferente.",
+ingredientes:[
+"Cascas de batata bem lavadas",
+"1 fio de azeite",
+"Sal e ervas"
+],
+preparo:[
+"Lave e esfregue muito bem as batatas antes de retirar as cascas, descartando qualquer parte verde ou danificada.",
+"Seque as cascas com um pano ou papel limpo.",
+"Misture com um pouco de azeite e os temperos.",
+"Espalhe em uma assadeira sem amontoar e asse a 200 °C até ficarem douradas e crocantes, virando na metade do tempo."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:45,
+nome:"Doce de Casca de Abacaxi com Canela",
+categoria:"Sobremesa",
+descricao:"Uma sobremesa aproveitando uma parte normalmente descartada.",
+ingredientes:[
+"Casca de 1 abacaxi bem higienizada",
+"1 xícara de açúcar",
+"2 xícaras de água",
+"1 pau de canela"
+],
+preparo:[
+"Higienize bem o abacaxi e corte a casca em pedaços menores.",
+"Cozinhe as cascas com a água e a canela até amaciarem.",
+"Acrescente o açúcar e continue em fogo baixo.",
+"Quando a calda engrossar e as cascas estiverem macias, desligue e deixe esfriar."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:46,
+nome:"Omelete de Talos de Brócolis",
+categoria:"Prato Principal",
+descricao:"Talos de brócolis entram no recheio de uma refeição rápida.",
+ingredientes:[
+"1 xícara de talos de brócolis",
+"3 ovos",
+"1/2 cebola",
+"2 colheres de queijo ralado",
+"Sal e temperos"
+],
+preparo:[
+"Lave os talos e pique-os em pedaços pequenos.",
+"Cozinhe rapidamente se estiverem muito firmes.",
+"Bata os ovos em uma tigela.",
+"Misture os talos, a cebola e o queijo.",
+"Aqueça uma frigideira untada e despeje a mistura.",
+"Cozinhe dos dois lados até o centro ficar completamente cozido."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:47,
+nome:"Vitamina de Banana com Polpa Congelada",
+categoria:"Bebida",
+descricao:"Aproveite bananas bem maduras antes que percam a qualidade.",
+ingredientes:[
+"2 bananas maduras próprias para consumo",
+"300 ml de leite",
+"1 colher de aveia",
+"Canela"
+],
+preparo:[
+"Separe bananas maduras que ainda estejam próprias para consumo.",
+"Corte as bananas.",
+"Coloque-as no liquidificador com o leite e a aveia.",
+"Bata até ficar cremoso.",
+"Acrescente canela se desejar e sirva imediatamente."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:48,
+nome:"Torta de Talos de Couve-Flor",
+categoria:"Prato Principal",
+descricao:"Os talos e folhas próprias da couve-flor ganham destaque no recheio.",
+ingredientes:[
+"1 xícara de talos e folhas de couve-flor",
+"2 ovos",
+"1 xícara de leite",
+"1 xícara de farinha de trigo",
+"1 colher de fermento",
+"Temperos"
+],
+preparo:[
+"Lave muito bem os talos e folhas e pique tudo em pedaços pequenos.",
+"Misture os ovos, o leite e a farinha até formar uma massa.",
+"Acrescente o fermento por último.",
+"Incorpore os talos e folhas à massa e tempere.",
+"Asse em forma untada a 180 °C por cerca de 35 minutos."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:49,
+nome:"Farofa de Folhas de Cenoura",
+categoria:"Acompanhamento",
+descricao:"Folhas frescas e próprias para consumo podem enriquecer a farofa.",
+ingredientes:[
+"1 xícara de folhas de cenoura",
+"2 xícaras de farinha de mandioca",
+"1/2 cebola",
+"1 colher de óleo",
+"Sal"
+],
+preparo:[
+"Lave cuidadosamente as folhas e retire partes danificadas.",
+"Refogue a cebola no óleo.",
+"Acrescente as folhas picadas.",
+"Cozinhe por alguns minutos até murcharem.",
+"Junte a farinha aos poucos, mexendo até a farofa ficar soltinha.",
+"Ajuste o sal e sirva."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:50,
+nome:"Biscoito de Bagaço de Coco",
+categoria:"Doce",
+descricao:"O coco usado em outras preparações pode ganhar uma segunda vida.",
+ingredientes:[
+"1 xícara de bagaço de coco fresco",
+"1 xícara de farinha de trigo",
+"1/2 xícara de açúcar",
+"2 colheres de manteiga",
+"1 ovo"
+],
+preparo:[
+"Aproveite o bagaço que sobra ao preparar leite de coco, mantendo-o fresco e refrigerado.",
+"Misture o bagaço com a manteiga, o ovo e o açúcar.",
+"Acrescente a farinha aos poucos até formar uma massa que possa ser modelada.",
+"Faça pequenos biscoitos, coloque em assadeira e asse a 180 °C até as bordas ficarem levemente douradas."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:51,
+nome:"Molho de Talos de Salsa",
+categoria:"Acompanhamento",
+descricao:"Talos de ervas frescas podem virar um molho cheio de sabor.",
+ingredientes:[
+"1 xícara de talos de salsa",
+"1/2 xícara de azeite",
+"1 dente de alho",
+"Suco de 1/2 limão",
+"Sal"
+],
+preparo:[
+"Lave muito bem os talos e retire partes danificadas.",
+"Pique os talos.",
+"Coloque no liquidificador com o azeite, alho e limão.",
+"Bata rapidamente até obter um molho.",
+"Ajuste o sal e mantenha refrigerado."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:52,
+nome:"Panqueca de Arroz Sobrado",
+categoria:"Salgado",
+descricao:"Arroz cozido que sobrou vira uma massa fácil para panquecas.",
+ingredientes:[
+"2 xícaras de arroz cozido",
+"1 ovo",
+"1 xícara de leite",
+"1/2 xícara de farinha",
+"Sal e temperos"
+],
+preparo:[
+"Use arroz cozido que tenha sido armazenado corretamente e esteja próprio para consumo.",
+"Bata o arroz, o ovo, o leite e a farinha até obter uma massa relativamente lisa.",
+"Aqueça uma frigideira antiaderente.",
+"Coloque uma pequena quantidade de massa e espalhe.",
+"Cozinhe dos dois lados.",
+"Recheie com legumes ou outras sobras próprias para consumo."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:53,
+nome:"Arroz com Talos de Couve",
+categoria:"Prato Principal",
+descricao:"Um prato simples que transforma talos em parte da refeição.",
+ingredientes:[
+"2 xícaras de arroz cozido",
+"1 xícara de talos de couve",
+"1/2 cebola",
+"1 dente de alho",
+"1 fio de óleo"
+],
+preparo:[
+"Lave e pique os talos em pedaços pequenos.",
+"Refogue alho e cebola.",
+"Acrescente os talos e cozinhe até ficarem macios.",
+"Adicione o arroz cozido.",
+"Misture cuidadosamente para não desmanchar os grãos.",
+"Aqueça tudo, ajuste os temperos e sirva."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:54,
+nome:"Compota de Casca de Maçã",
+categoria:"Sobremesa",
+descricao:"Cascas de maçã bem higienizadas podem virar uma compota aromática.",
+ingredientes:[
+"Cascas de 5 maçãs",
+"1/2 xícara de açúcar",
+"1 xícara de água",
+"Canela"
+],
+preparo:[
+"Lave muito bem as maçãs.",
+"Retire as cascas e descarte partes machucadas.",
+"Coloque as cascas em uma panela com água, açúcar e canela.",
+"Cozinhe em fogo baixo até as cascas ficarem macias.",
+"Deixe a calda reduzir.",
+"Espere esfriar e mantenha refrigerado."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:55,
+nome:"Refresco de Casca de Melão",
+categoria:"Bebida",
+descricao:"A parte aproveitável do melão pode contribuir para uma bebida refrescante.",
+ingredientes:[
+"Parte aproveitável da casca de 1 melão",
+"700 ml de água",
+"Suco de 1 limão",
+"Açúcar"
+],
+preparo:[
+"Higienize muito bem o melão.",
+"Utilize apenas a parte própria para consumo.",
+"Bata com a água.",
+"Coe se desejar uma bebida mais leve.",
+"Acrescente o limão.",
+"Adoce a gosto e mantenha refrigerado."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:56,
+nome:"Bolinho de Talos de Espinafre",
+categoria:"Salgado",
+descricao:"Talos que sobrariam da preparação das folhas viram bolinhos.",
+ingredientes:[
+"1 xícara de talos de espinafre",
+"1 ovo",
+"1/2 xícara de farinha",
+"1/2 cebola",
+"Sal e temperos"
+],
+preparo:[
+"Lave muito bem os talos e pique-os.",
+"Misture os talos com o ovo e a cebola.",
+"Acrescente a farinha até formar uma massa consistente.",
+"Tempere.",
+"Modele pequenos bolinhos.",
+"Asse a 200 °C até dourarem, virando na metade do tempo."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:57,
+nome:"Bolo de Bagaço de Maçã",
+categoria:"Bolo",
+descricao:"O bagaço que sobra ao fazer suco de maçã pode entrar na massa.",
+ingredientes:[
+"1 xícara de bagaço de maçã",
+"2 ovos",
+"1 xícara de açúcar",
+"1,5 xícara de farinha",
+"1/2 xícara de óleo",
+"1 colher de fermento"
+],
+preparo:[
+"Aproveite o bagaço fresco da maçã, retirando sementes e partes que não sejam próprias para consumo.",
+"Misture o bagaço com os ovos, o açúcar e o óleo.",
+"Adicione a farinha aos poucos.",
+"Incorpore o fermento delicadamente.",
+"Asse em forma untada a 180 °C por cerca de 35 minutos."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:58,
+nome:"Purê de Casca de Abóbora",
+categoria:"Acompanhamento",
+descricao:"A casca bem cozida da abóbora pode ser aproveitada em um purê cremoso.",
+ingredientes:[
+"2 xícaras de casca de abóbora",
+"1 colher de manteiga ou azeite",
+"1/2 cebola",
+"Leite",
+"Sal e temperos"
+],
+preparo:[
+"Lave bem a abóbora.",
+"Utilize somente a casca própria para consumo.",
+"Cozinhe a casca até ficar macia.",
+"Refogue a cebola.",
+"Acrescente a casca cozida.",
+"Amasse ou processe.",
+"Adicione leite aos poucos até atingir a textura desejada."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:59,
+nome:"Sopa de Talos de Couve-Flor",
+categoria:"Prato Principal",
+descricao:"Talos e folhas aproveitáveis formam uma sopa cremosa.",
+ingredientes:[
+"2 xícaras de talos e folhas",
+"1 batata",
+"1/2 cebola",
+"700 ml de água",
+"Sal e temperos"
+],
+preparo:[
+"Lave muito bem os talos e folhas.",
+"Corte tudo em pedaços pequenos.",
+"Refogue a cebola.",
+"Acrescente os talos, folhas e batata.",
+"Cubra com água.",
+"Cozinhe até os ingredientes ficarem macios.",
+"Bata cuidadosamente até formar um creme."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:60,
+nome:"Pudim de Banana Madura",
+categoria:"Sobremesa",
+descricao:"Bananas muito maduras e ainda próprias para consumo ganham uma nova receita.",
+ingredientes:[
+"3 bananas maduras",
+"2 ovos",
+"1 xícara de leite",
+"1/2 xícara de açúcar",
+"1/2 xícara de farinha de aveia"
+],
+preparo:[
+"Retire qualquer parte machucada das bananas.",
+"Amasse o restante.",
+"Misture com os ovos, leite, açúcar e aveia.",
+"Mexa até ficar uniforme.",
+"Coloque em forma untada.",
+"Asse a 180 °C até o centro firmar.",
+"Espere amornar antes de cortar."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:61,
+nome:"Farofa de Talos de Beterraba",
+categoria:"Acompanhamento",
+descricao:"Os talos coloridos da beterraba podem deixar a farofa diferente e saborosa.",
+ingredientes:[
+"1 xícara de talos de beterraba",
+"2 xícaras de farinha de mandioca",
+"1/2 cebola",
+"1 fio de óleo",
+"Sal e temperos"
+],
+preparo:[
+"Lave bem os talos.",
+"Corte-os em pedaços pequenos.",
+"Refogue a cebola no óleo.",
+"Acrescente os talos e cozinhe até amaciarem.",
+"Adicione a farinha gradualmente.",
+"Misture até ficar soltinha.",
+"Ajuste os temperos."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:62,
+nome:"Doce de Casca de Limão",
+categoria:"Doce",
+descricao:"Com preparo adequado, a casca do limão pode virar um doce aromático.",
+ingredientes:[
+"Cascas de 4 limões",
+"2 xícaras de açúcar",
+"1 xícara de água"
+],
+preparo:[
+"Lave muito bem os limões.",
+"Retire as cascas em tiras finas.",
+"Deixe as cascas de molho em água, trocando a água algumas vezes para reduzir o amargor.",
+"Leve ao fogo com água e açúcar.",
+"Misture até as cascas ficarem macias e a calda engrossar.",
+"Deixe esfriar antes de servir."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:63,
+nome:"Cuscuz com Sobras de Legumes",
+categoria:"Prato Principal",
+descricao:"Legumes cozidos que sobraram podem enriquecer um cuscuz simples.",
+ingredientes:[
+"2 xícaras de flocos de milho",
+"1 xícara de legumes cozidos",
+"1/2 cebola",
+"Água",
+"Sal"
+],
+preparo:[
+"Verifique se os legumes foram armazenados corretamente e ainda estão próprios para consumo.",
+"Hidrate os flocos de milho com água e sal.",
+"Refogue a cebola.",
+"Acrescente os legumes para aquecer.",
+"Cozinhe o cuscuz no vapor.",
+"Misture delicadamente os legumes ao cuscuz pronto."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:64,
+nome:"Creme de Talos de Brócolis",
+categoria:"Sopa",
+descricao:"Os talos do brócolis podem virar um creme quente e econômico.",
+ingredientes:[
+"2 xícaras de talos de brócolis",
+"1 batata",
+"1/2 cebola",
+"700 ml de água",
+"Sal e temperos"
+],
+preparo:[
+"Lave muito bem os talos.",
+"Corte-os em pedaços pequenos.",
+"Refogue a cebola.",
+"Adicione os talos e a batata.",
+"Cubra com água.",
+"Cozinhe até ficarem macios.",
+"Bata cuidadosamente até formar um creme.",
+"Volte à panela para aquecer e ajuste os temperos."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:65,
+nome:"Pão de Polpa de Cenoura",
+categoria:"Bolo",
+descricao:"A polpa que sobra do preparo de suco pode ser incorporada a uma massa assada.",
+ingredientes:[
+"1 xícara de polpa de cenoura",
+"2 ovos",
+"2 xícaras de farinha",
+"1/2 xícara de óleo",
+"1/2 xícara de leite",
+"1 colher de fermento"
+],
+preparo:[
+"Separe a polpa fresca que sobrou do suco.",
+"Misture a polpa com os ovos, o óleo e o leite.",
+"Acrescente a farinha aos poucos.",
+"Incorpore o fermento.",
+"Coloque em forma untada.",
+"Asse a 180 °C até dourar e ficar firme no centro."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:66,
+nome:"Salada de Talos de Brócolis",
+categoria:"Salgado",
+descricao:"Talos crocantes e próprios para consumo podem virar uma salada simples.",
+ingredientes:[
+"1 xícara de talos de brócolis",
+"1 cenoura",
+"1/2 cebola",
+"Suco de limão",
+"Azeite",
+"Sal"
+],
+preparo:[
+"Lave muito bem os talos.",
+"Corte-os em fatias finas.",
+"Cozinhe rapidamente, mantendo-os firmes.",
+"Deixe esfriar.",
+"Misture com a cenoura e a cebola.",
+"Tempere com limão, azeite e sal.",
+"Mantenha refrigerado até servir."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:67,
+nome:"Bolo de Bagaço de Abacaxi",
+categoria:"Bolo",
+descricao:"A fibra que sobra depois de preparar o abacaxi pode entrar em um bolo.",
+ingredientes:[
+"1 xícara de bagaço de abacaxi",
+"2 ovos",
+"1 xícara de açúcar",
+"1,5 xícara de farinha",
+"1/2 xícara de óleo",
+"1 colher de fermento"
+],
+preparo:[
+"Aproveite a polpa fibrosa que sobrar depois de preparar o suco.",
+"Retire partes duras ou impróprias.",
+"Misture o bagaço com os ovos, açúcar e óleo.",
+"Adicione a farinha.",
+"Incorpore o fermento.",
+"Asse a 180 °C por aproximadamente 35 minutos."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:68,
+nome:"Arroz de Cascas e Talos",
+categoria:"Prato Principal",
+descricao:"Uma combinação de partes aproveitáveis que normalmente seriam descartadas.",
+ingredientes:[
+"2 xícaras de arroz cozido",
+"1 xícara de talos e cascas de legumes",
+"1/2 cebola",
+"1 dente de alho",
+"1 fio de óleo",
+"Temperos"
+],
+preparo:[
+"Lave muito bem as partes dos legumes que forem próprias para consumo.",
+"Pique tudo em pedaços pequenos.",
+"Refogue alho e cebola.",
+"Acrescente os talos e cascas e cozinhe até ficarem macios.",
+"Junte o arroz cozido.",
+"Misture e aqueça completamente.",
+"Ajuste os temperos e sirva."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:69,
+nome:"Refresco de Casca de Laranja com Hortelã",
+categoria:"Bebida",
+descricao:"Cascas de laranja bem higienizadas podem aromatizar uma bebida refrescante.",
+ingredientes:[
+"Cascas de 2 laranjas",
+"1 litro de água",
+"Folhas de hortelã",
+"Açúcar"
+],
+preparo:[
+"Lave muito bem as laranjas.",
+"Retire as cascas.",
+"Ferva as cascas na água por alguns minutos.",
+"Deixe amornar.",
+"Coe.",
+"Acrescente hortelã e açúcar.",
+"Leve à geladeira e sirva fresco."
+],
+autor:"🚒 CMCB Turma 101"
+},
+
+{
+id:70,
+nome:"Croquete de Sobras de Legumes",
+categoria:"Salgado",
+descricao:"Legumes cozidos que sobraram podem virar um salgado assado.",
+ingredientes:[
+"2 xícaras de legumes cozidos",
+"1 ovo",
+"1/2 xícara de farinha",
+"2 colheres de queijo ralado",
+"Farinha de rosca",
+"Sal e temperos"
+],
+preparo:[
+"Use somente legumes cozidos que foram armazenados corretamente e ainda estejam próprios para consumo.",
+"Amasse ou pique bem os legumes.",
+"Misture com o ovo, farinha, queijo e temperos.",
+"Modele pequenos croquetes.",
+"Passe na farinha de rosca.",
+"Disponha em assadeira untada.",
+"Asse a 200 °C até ficarem firmes e dourados, virando na metade do tempo."
+],
+autor:"🚒 CMCB Turma 101"
+}
+
 ];
 
-const todasReceitas = [...receitasOficiais, ...maisReceitas];
-let receitasComunidade = JSON.parse(localStorage.getItem('receitasComunidade') || '[]');
+const todasReceitas=[
+    ...receitasOficiais,
+    ...maisReceitas
+];
 
-// ELEMENTOS
-const gradeReceitas = document.getElementById('grade-receitas');
-const gradeComunidade = document.getElementById('grade-comunidade');
-const modal = document.getElementById('modal-receita');
-const semResultado = document.getElementById('sem-resultado');
-const semComunidade = document.getElementById('sem-comunidade');
-const campoPesquisa = document.getElementById('pesquisa');
-const formReceita = document.getElementById('form-receita');
-const totalReceitas = document.getElementById('total-receitas');
-const totalComunidade = document.getElementById('total-comunidade');
+let receitasComunidade =
+    JSON.parse(
+        localStorage.getItem(
+            "receitasComunidade"
+        ) || "[]"
+    );
 
-// RENDERIZAR RECEITAS
-function renderizarReceitas(lista, container) {
-    container.innerHTML = '';
-    if (lista.length === 0) return;
-    
-    lista.forEach((receita) => {
-        const cartao = document.createElement('div');
-        cartao.className = 'cartao-receita';
-        cartao.innerHTML = `
-            <h3>${receita.nome}</h3>
-            <span class="categoria">${receita.categoria}</span>
-            <p>${receita.descricao}</p>
-            <span style="color: var(--azul); font-weight: 600;">Ver detalhes →</span>
-        `;
-        cartao.onclick = () => abrirModal(receita);
-        container.appendChild(cartao);
-    });
-}
+const gradeReceitas =
+    document.getElementById(
+        "grade-receitas"
+    );
 
-// ABRIR MODAL
-function abrirModal(receita) {
-    document.getElementById('modal-titulo').textContent = receita.nome;
-    document.getElementById('modal-categoria').textContent = receita.categoria;
-    document.getElementById('modal-descricao').textContent = receita.descricao;
-    
-    const listaIng = document.getElementById('modal-ingredientes');
-    listaIng.innerHTML = '';
-    receita.ingredientes.forEach(i => { const li = document.createElement('li'); li.textContent = i; listaIng.appendChild(li); });
-    
-    const listaPrep = document.getElementById('modal-preparo');
-    listaPrep.innerHTML = '';
-    receita.preparo.forEach(p => { const li = document.createElement('li'); li.textContent = p; listaPrep.appendChild(li); });
-    
-    document.getElementById('modal-autor').textContent = receita.autor;
-    modal.style.display = 'block';
-    document.body.style.overflow = 'hidden';
-}
+const gradeComunidade =
+    document.getElementById(
+        "grade-comunidade"
+    );
 
-// FECHAR MODAL
-document.querySelector('.fechar').onclick = () => {
-    modal.style.display = 'none';
-    document.body.style.overflow = 'auto';
-};
-window.onclick = (e) => {
-    if (e.target === modal) {
-        modal.style.display = 'none';
-        document.body.style.overflow = 'auto';
-    }
-};
+const modal =
+    document.getElementById(
+        "modal-receita"
+    );
 
-// PESQUISA
-campoPesquisa.addEventListener('input', (e) => {
-    const termo = e.target.value.toLowerCase().trim();
-    if (!termo) {
-        renderizarReceitas(todasReceitas, gradeReceitas);
-        semResultado.style.display = 'none';
+const semResultado =
+    document.getElementById(
+        "sem-resultado"
+    );
+
+const semComunidade =
+    document.getElementById(
+        "sem-comunidade"
+    );
+
+const campoPesquisa =
+    document.getElementById(
+        "pesquisa"
+    );
+
+const formReceita =
+    document.getElementById(
+        "form-receita"
+    );
+
+const totalReceitas =
+    document.getElementById(
+        "total-receitas"
+    );
+
+const totalComunidade =
+    document.getElementById(
+        "total-comunidade"
+    );
+
+const botoesCategoria =
+    document.querySelectorAll(
+        ".categoria-btn"
+    );
+
+let categoriaAtual="Todas";
+
+
+/* ============================
+   RENDERIZAR CARDS
+============================ */
+
+function renderizarReceitas(
+    lista,
+    container
+){
+
+    container.innerHTML="";
+
+    if(lista.length===0){
         return;
     }
-    const filtradas = todasReceitas.filter(r => 
-        r.nome.toLowerCase().includes(termo) || r.categoria.toLowerCase().includes(termo)
+
+    lista.forEach(
+        (receita) => {
+
+            const cartao =
+                document.createElement("div");
+
+            cartao.className =
+                "cartao-receita";
+
+            cartao.innerHTML=`
+
+                <h3>
+                    ${receita.nome}
+                </h3>
+
+                <span class="categoria">
+                    ${receita.categoria}
+                </span>
+
+                <p>
+                    ${receita.descricao}
+                </p>
+
+                <span
+                    style="
+                    color:var(--azul);
+                    font-weight:600
+                    ">
+
+                    Ver detalhes →
+
+                </span>
+
+            `;
+
+            cartao.onclick=() =>
+                abrirModal(receita);
+
+            container.appendChild(
+                cartao
+            );
+
+        }
     );
-    if (filtradas.length === 0) {
-        gradeReceitas.innerHTML = '';
-        semResultado.style.display = 'block';
-    } else {
-        semResultado.style.display = 'none';
-        renderizarReceitas(filtradas, gradeReceitas);
-    }
-});
 
-// ENVIAR RECEITA
-formReceita.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const nova = {
-        nome: document.getElementById('nome-receita').value,
-        categoria: document.getElementById('categoria').value,
-        descricao: document.getElementById('descricao').value,
-        ingredientes: document.getElementById('ingredientes').value.split('\n').filter(l=>l.trim()),
-        preparo: document.getElementById('modo-preparo').value.split('\n').filter(l=>l.trim()),
-        autor: document.getElementById('autor').value || '🚒 Anônimo — CMCB Turma 101'
-    };
-    receitasComunidade.unshift(nova);
-    localStorage.setItem('receitasComunidade', JSON.stringify(receitasComunidade));
-    atualizarComunidade();
-    formReceita.reset();
-    document.getElementById('mensagem-sucesso').style.display = 'block';
-    setTimeout(() => document.getElementById('mensagem-sucesso').style.display = 'none', 5000);
-});
-
-function atualizarComunidade() {
-    if (receitasComunidade.length === 0) {
-        gradeComunidade.innerHTML = '';
-        semComunidade.style.display = 'block';
-    } else {
-        semComunidade.style.display = 'none';
-        renderizarReceitas(receitasComunidade, gradeComunidade);
-    }
-    totalComunidade.textContent = receitasComunidade.length;
 }
 
-// INICIALIZAR
-renderizarReceitas(todasReceitas, gradeReceitas);
-totalReceitas.textContent = todasReceitas.length;
-totalComunidade.textContent = receitasComunidade.length;
+
+/* ============================
+   MODAL
+============================ */
+
+function abrirModal(receita){
+
+    document.getElementById(
+        "modal-titulo"
+    ).textContent=receita.nome;
+
+    document.getElementById(
+        "modal-categoria"
+    ).textContent=receita.categoria;
+
+    document.getElementById(
+        "modal-descricao"
+    ).textContent=receita.descricao;
+
+    const listaIng =
+        document.getElementById(
+            "modal-ingredientes"
+        );
+
+    listaIng.innerHTML="";
+
+    receita.ingredientes.forEach(
+        ingrediente => {
+
+            const li =
+                document.createElement("li");
+
+            li.textContent=ingrediente;
+
+            li.style.marginBottom="8px";
+
+            listaIng.appendChild(li);
+
+        }
+    );
+
+    const listaPrep =
+        document.getElementById(
+            "modal-preparo"
+        );
+
+    listaPrep.innerHTML="";
+
+    receita.preparo.forEach(
+        etapa => {
+
+            const li =
+                document.createElement("li");
+
+            li.textContent=etapa;
+
+            li.style.marginBottom="12px";
+
+            li.style.lineHeight="1.55";
+
+            listaPrep.appendChild(li);
+
+        }
+    );
+
+    document.getElementById(
+        "modal-autor"
+    ).textContent=receita.autor;
+
+    modal.style.display="block";
+
+    document.body.style.overflow="hidden";
+}
+
+
+/* FECHAR MODAL */
+
+document
+    .querySelector(".fechar")
+    .onclick=()=>{
+
+        modal.style.display="none";
+
+        document.body.style.overflow="auto";
+
+    };
+
+window.onclick=(e)=>{
+
+    if(e.target===modal){
+
+        modal.style.display="none";
+
+        document.body.style.overflow="auto";
+
+    }
+
+};
+
+
+/* ============================
+   FILTRO
+============================ */
+
+function filtrarReceitas(){
+
+    const termo =
+        campoPesquisa.value
+        .toLowerCase()
+        .trim();
+
+    const filtradas =
+        todasReceitas.filter(
+            receita => {
+
+                const correspondePesquisa =
+                    !termo ||
+                    receita.nome
+                        .toLowerCase()
+                        .includes(termo) ||
+                    receita.categoria
+                        .toLowerCase()
+                        .includes(termo) ||
+                    receita.descricao
+                        .toLowerCase()
+                        .includes(termo);
+
+                const correspondeCategoria =
+                    categoriaAtual==="Todas" ||
+                    receita.categoria===categoriaAtual;
+
+                return
+                    correspondePesquisa &&
+                    correspondeCategoria;
+
+            }
+        );
+
+    if(filtradas.length===0){
+
+        gradeReceitas.innerHTML="";
+
+        semResultado.style.display="block";
+
+    }else{
+
+        semResultado.style.display="none";
+
+        renderizarReceitas(
+            filtradas,
+            gradeReceitas
+        );
+
+    }
+
+}
+
+campoPesquisa.addEventListener(
+    "input",
+    filtrarReceitas
+);
+
+
+/* ============================
+   BOTÕES DE CATEGORIA
+============================ */
+
+botoesCategoria.forEach(
+    botao => {
+
+        botao.addEventListener(
+            "click",
+            function(){
+
+                botoesCategoria.forEach(
+                    btn =>
+                    btn.classList.remove(
+                        "ativo"
+                    )
+                );
+
+                this.classList.add(
+                    "ativo"
+                );
+
+                categoriaAtual =
+                    this.dataset.categoria;
+
+                filtrarReceitas();
+
+            }
+        );
+
+    }
+);
+
+
+/* ============================
+   FORMULÁRIO COMUNIDADE
+============================ */
+
+formReceita.addEventListener(
+    "submit",
+    e => {
+
+        e.preventDefault();
+
+        const nova={
+
+            nome:
+                document.getElementById(
+                    "nome-receita"
+                ).value,
+
+            categoria:
+                document.getElementById(
+                    "categoria"
+                ).value,
+
+            descricao:
+                document.getElementById(
+                    "descricao"
+                ).value,
+
+            ingredientes:
+                document
+                    .getElementById(
+                        "ingredientes"
+                    )
+                    .value
+                    .split("\n")
+                    .filter(
+                        linha =>
+                        linha.trim()
+                    ),
+
+            preparo:
+                document
+                    .getElementById(
+                        "modo-preparo"
+                    )
+                    .value
+                    .split("\n")
+                    .filter(
+                        linha =>
+                        linha.trim()
+                    ),
+
+            autor:
+                document.getElementById(
+                    "autor"
+                ).value ||
+                "🚒 Anônimo — CMCB Turma 101"
+
+        };
+
+        receitasComunidade.unshift(
+            nova
+        );
+
+        localStorage.setItem(
+            "receitasComunidade",
+            JSON.stringify(
+                receitasComunidade
+            )
+        );
+
+        atualizarComunidade();
+
+        formReceita.reset();
+
+        document.getElementById(
+            "mensagem-sucesso"
+        ).style.display="block";
+
+        setTimeout(
+            () => {
+
+                document.getElementById(
+                    "mensagem-sucesso"
+                ).style.display="none";
+
+            },
+            5000
+        );
+
+    }
+);
+
+
+/* ============================
+   COMUNIDADE
+============================ */
+
+function atualizarComunidade(){
+
+    if(
+        receitasComunidade.length===0
+    ){
+
+        gradeComunidade.innerHTML="";
+
+        semComunidade.style.display=
+            "block";
+
+    }else{
+
+        semComunidade.style.display=
+            "none";
+
+        renderizarReceitas(
+            receitasComunidade,
+            gradeComunidade
+        );
+
+    }
+
+    totalComunidade.textContent =
+        receitasComunidade.length;
+
+}
+
+
+/* ============================
+   INICIALIZAÇÃO
+============================ */
+
+renderizarReceitas(
+    todasReceitas,
+    gradeReceitas
+);
+
+totalReceitas.textContent =
+    todasReceitas.length;
+
+atualizarComunidade();
+
 </script>
 
 </body>
